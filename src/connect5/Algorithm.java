@@ -15,7 +15,7 @@ public class Algorithm extends Operations {
         this.col = col;
         this.game = game;
 
-        this.result = play(this.row, this.col, this.game);
+        this.result = play(this);
     }
 
     public int getRow() {
