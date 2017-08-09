@@ -7,6 +7,7 @@ public class Algorithm {
 
     private int col;
     private int row;
+    private int result;
 
     public Algorithm(int col, int row) {
         this.col = col;
