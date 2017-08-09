@@ -3,14 +3,26 @@ package connect5;
 /**
  * Created by nebojsa.sapic on 8/8/17.
  */
-public class Algorithm {
+public class Algorithm extends Operations {
 
-    private int col;
     private int row;
-    private int result;
+    private int col;
+    private int[][] game;
+    private int[] result;
 
-    public Algorithm(int col, int row) {
+    public Algorithm(int row, int col, int[][] game) {
+        this.row = row;
         this.col = col;
+        this.game = game;
+
+        this.result = play(this.row, this.col, this.game);
+    }
+
+    public int getRow() {
+        return row;
+    }
+
+    public void setRow(int row) {
         this.row = row;
     }
 
@@ -22,11 +34,19 @@ public class Algorithm {
         this.col = col;
     }
 
-    public int getRow() {
-        return row;
+    public int[][] getGame() {
+        return game;
     }
 
-    public void setRow(int row) {
-        this.row = row;
+    public void setGame(int[][] game) {
+        this.game = game;
+    }
+
+    public int[] getResult() {
+        return result;
+    }
+
+    public void setResult(int[] result) {
+        this.result = result;
     }
 }
