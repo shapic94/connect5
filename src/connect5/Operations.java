@@ -16,8 +16,17 @@ public class Operations implements OperationsAbstract {
         Token white = new Token(0, false);
         show(algorithm);
         turn(algorithm, black, white);
-        add(algorithm, black, white);
+
+        while(true) {
+            // Check if table is full
+            if (checkFullGame(algorithm)) {
+                System.out.println("Popunjeno");
+                break;
+            }
+            add(algorithm, black, white);
+        }
         show(algorithm);
+        System.out.println("test");
         return new int[0];
     }
 
@@ -34,11 +43,22 @@ public class Operations implements OperationsAbstract {
     @Override
     public void add(Algorithm algorithm, Token black, Token white) {
         while (true) {
-            int random = ThreadLocalRandom.current().nextInt(0, algorithm.getCol() + 1);
+            if (checkFullGame(algorithm)) {
+                System.out.println("Popunjeno");
+                break;
+            }
+            int random = ThreadLocalRandom.current().nextInt(0, algorithm.getCol());
             int i = 0;
+
+            // Check if repeated random
+            if (!algorithm.getFullColumn()[random]) {
+                continue;
+            }
             while (true) {
                 // Check if column is full
                 if (algorithm.getGame()[i][random] == Token.BLACK || algorithm.getGame()[i][random] == Token.WHITE) {
+                    algorithm.getFullColumn()[random] = false;
+                    algorithm.setFullColumn(algorithm.getFullColumn());
                     break;
                 }
 
@@ -54,6 +74,11 @@ public class Operations implements OperationsAbstract {
                     break;
                 }
                 i++;
+            }
+
+            // Check again if repeated random because first condition in while loop
+            if (!algorithm.getFullColumn()[random]) {
+                continue;
             }
             break;
         }
@@ -76,6 +101,16 @@ public class Operations implements OperationsAbstract {
     @Override
     public void check(Algorithm algorithm) {
 
+    }
+
+    @Override
+    public boolean checkFullGame(Algorithm algorithm) {
+        for (int i = 0; i < algorithm.getFullColumn().length; i++) {
+            if (algorithm.getFullColumn()[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

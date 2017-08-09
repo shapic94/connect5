@@ -1,5 +1,7 @@
 package connect5;
 
+import java.util.Arrays;
+
 /**
  * Created by nebojsa.sapic on 8/8/17.
  */
@@ -9,11 +11,14 @@ public class Algorithm extends Operations {
     private int col;
     private int[][] game;
     private int[] result;
+    private boolean[] fullColumn;
 
-    public Algorithm(int row, int col, int[][] game) {
+    public Algorithm(int row, int col, int[][] game, boolean[] fullColumn) {
         this.row = row;
         this.col = col;
         this.game = game;
+        this.fullColumn = fullColumn;
+        Arrays.fill(this.fullColumn, true);
 
         this.result = play(this);
     }
@@ -48,5 +53,13 @@ public class Algorithm extends Operations {
 
     public void setResult(int[] result) {
         this.result = result;
+    }
+
+    public boolean[] getFullColumn() {
+        return fullColumn;
+    }
+
+    public void setFullColumn(boolean[] fullColumn) {
+        this.fullColumn = fullColumn;
     }
 }

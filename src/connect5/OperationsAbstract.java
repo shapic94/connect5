@@ -13,5 +13,6 @@ public interface OperationsAbstract {
     void add(Algorithm algorithm, Token black, Token white);
     void addInGame(Algorithm algorithm, Token black, Token white, int random, int i);
     void check(Algorithm algorithm);
+    boolean checkFullGame(Algorithm algorithm);
     void turn(Algorithm algorithm, Token black, Token white);
 }
