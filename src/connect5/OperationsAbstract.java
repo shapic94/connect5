@@ -13,7 +13,7 @@ public interface OperationsAbstract {
     Object[] init(int row, int col, int tokens, int times);
     int[] play(Algorithm algorithm, Token black, Token white);
     void show(Algorithm algorithm);
-    boolean add(Algorithm algorithm, Token black, Token white);
+    int add(Algorithm algorithm, Token black, Token white);
     boolean addInGame(Algorithm algorithm, Token black, Token white, int random, int i);
     boolean check(Algorithm algorithm, int row, int col);
     boolean checkFullGame(Algorithm algorithm);

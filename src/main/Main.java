@@ -25,7 +25,7 @@ public class Main {
         int tokens = 5;
 
         // Times
-        int times = 10;
+        int times = 1000;
 
         // Initializing
         Object[] object = new Operations().init(row, col, tokens, times);

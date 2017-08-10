@@ -88,7 +88,6 @@ public class Operations implements OperationsAbstract {
             System.out.println("[Operations][test()] Play game");
             algorithm.play(algorithm, black, white);
             algorithm.show(algorithm);
-            algorithm.show(algorithm);
 
             // Winner
             if (black.isWinner()) {
@@ -123,7 +122,10 @@ public class Operations implements OperationsAbstract {
             }
 
             // Add and check if someone winn
-            if (add(algorithm, black, white)) {
+            int add = add(algorithm, black, white);
+            if (add == Storage.ADD_FULL) {
+                break;
+            } else if (add == Storage.ADD_FOUNDED) {
                 break;
             }
         }
@@ -135,14 +137,14 @@ public class Operations implements OperationsAbstract {
     public void show(Algorithm algorithm) {
         for(int i = 0; i < algorithm.getRow(); i++) {
             for(int j = 0; j < algorithm.getCol(); j++) {
-                System.out.print(algorithm.getGame()[i][j]);
+                System.out.print(algorithm.getGame()[i][j] + " ");
             }
             System.out.println();
         }
     }
 
     @Override
-    public boolean add(Algorithm algorithm, Token black, Token white) {
+    public int add(Algorithm algorithm, Token black, Token white) {
         while (true) {
             if (checkFullGame(algorithm)) {
                 System.out.println("[Operations][add()] Popunjeno");
@@ -151,7 +153,7 @@ public class Operations implements OperationsAbstract {
                 if (!black.isWinner() && !white.isWinner()) {
                     System.out.println("[Operations][add()] Nema pobednika");
                 }
-                return false;
+                return Storage.ADD_FULL;
             }
             int random = ThreadLocalRandom.current().nextInt(0, algorithm.getCol());
             int i = 0;
@@ -174,7 +176,7 @@ public class Operations implements OperationsAbstract {
                     if (!addInGame(algorithm, black, white, random, i)) {
                         algorithm.setRowWinner(i);
                         algorithm.setColWinner(random);
-                        return true;
+                        return Storage.ADD_FOUNDED;
                     }
                     break;
                 }
@@ -186,7 +188,7 @@ public class Operations implements OperationsAbstract {
                     if (!addInGame(algorithm, black, white, random, i)) {
                         algorithm.setRowWinner(i);
                         algorithm.setColWinner(random);
-                        return true;
+                        return Storage.ADD_FOUNDED;
                     }
                     break;
                 }
@@ -199,7 +201,7 @@ public class Operations implements OperationsAbstract {
             }
             break;
         }
-        return false;
+        return Storage.ADD_NEXT;
     }
 
     @Override
@@ -367,10 +369,14 @@ public class Operations implements OperationsAbstract {
                                 }
                             } else {
                                 i++;
+                                left = true;
+                                right = true;
                                 break;
                             }
                         } else {
                             i++;
+                            left = true;
+                            right = true;
                             break;
                         }
                     }
@@ -431,10 +437,14 @@ public class Operations implements OperationsAbstract {
                                 }
                             } else {
                                 i++;
+                                left = true;
+                                right = true;
                                 break;
                             }
                         } else {
                             i++;
+                            left = true;
+                            right = true;
                             break;
                         }
                     }
@@ -495,10 +505,14 @@ public class Operations implements OperationsAbstract {
                                 }
                             } else {
                                 i++;
+                                left = true;
+                                right = true;
                                 break;
                             }
                         } else {
                             i++;
+                            left = true;
+                            right = true;
                             break;
                         }
                     }
@@ -547,6 +561,7 @@ public class Operations implements OperationsAbstract {
         algorithm.setRowWinner(0);
         algorithm.setColWinner(0);
         algorithm.setFullColumnTrue();
+        algorithm.setGame(new int[algorithm.getRow()][algorithm.getCol()]);
 
         black.setWinner(false);
         white.setWinner(false);
