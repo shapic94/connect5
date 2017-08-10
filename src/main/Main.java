@@ -14,7 +14,7 @@ import entity.Token;
 public class Main {
 
     public static void main(String [] args) {
-        System.out.println("Welcome to connect5 game");
+        System.out.println("Welcome to connect5 games");
 
         // Rows
         int row = 10;
