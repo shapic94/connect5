@@ -10,23 +10,95 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Operations implements OperationsAbstract {
 
     @Override
-    public int[] play(Algorithm algorithm) {
+    public Object[] init(int row, int col, int tokens, int times) {
 
+        // Create algorithm
+        Algorithm algorithm = new Algorithm();
+
+        // Init rows
+        algorithm.setRow(row);
+
+        // Init columns
+        algorithm.setCol(col);
+
+        // Init tokens
+        algorithm.setTokens(tokens);
+
+        // Init times
+        algorithm.setTimes(times);
+
+        // Init fullColumn
+        algorithm.setFullColumn(new boolean[algorithm.getCol()]);
+        algorithm.setFullColumnTrue();
+
+        // Init game
+        algorithm.setGame(new int[algorithm.getRow()][algorithm.getCol()]);
+
+        // Create Tokens
         Token black = new Token(0, false);
         Token white = new Token(0, false);
-        show(algorithm);
+
+        Object[] object = new Object[3];
+        object[0] = algorithm;
+        object[1] = black;
+        object[2] = white;
+
+        return object;
+
+    }
+
+    @Override
+    public void test(Algorithm algorithm, Token black, Token white) {
+        // Random column
+        int random;
+
+        // Random token
+        int token;
+
+        // Check if token has already in column
+        int[] columnHasToken = new int[algorithm.getCol()];
+
+
+        for (int i = 0; i < algorithm.getTokens(); i++) {
+            random = ThreadLocalRandom.current().nextInt(0, algorithm.getCol());
+            token = ThreadLocalRandom.current().nextInt(1, Token.COUNT + 1);
+
+            if (token == Token.BLACK) {
+                black.setTurn(true);
+                white.setTurn(false);
+                add(algorithm, black, white);
+
+            } else if (token == Token.WHITE) {
+                black.setTurn(false);
+                white.setTurn(true);
+                add(algorithm, black, white);
+            }
+        }
+    }
+
+    @Override
+    public boolean testSameColumn(int[] columnHasToken) {
+        for (int i = 0; i < columnHasToken.length; i++) {
+            if (columnHasToken[i] == 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public int[] play(Algorithm algorithm, Token black, Token white) {
+
         turn(algorithm, black, white);
 
         while(true) {
             // Check if table is full
             if (checkFullGame(algorithm)) {
-                System.out.println("Popunjeno");
                 break;
             }
             add(algorithm, black, white);
         }
-        show(algorithm);
-        System.out.println("test");
+
         return new int[0];
     }
 
@@ -44,7 +116,7 @@ public class Operations implements OperationsAbstract {
     public void add(Algorithm algorithm, Token black, Token white) {
         while (true) {
             if (checkFullGame(algorithm)) {
-                System.out.println("Popunjeno");
+                System.out.println("[Operations] Popunjeno");
                 break;
             }
             int random = ThreadLocalRandom.current().nextInt(0, algorithm.getCol());
@@ -126,10 +198,10 @@ public class Operations implements OperationsAbstract {
         }
 
         if (black.getFields() < white.getFields()) {
-            System.out.println("Black token has first turn.");
+            System.out.println("[Operations] Black token has first turn.");
             black.setTurn(true);
         } else {
-            System.out.println("White token has first turn.");
+            System.out.println("[Operations] White token has first turn.");
             white.setTurn(true);
         }
     }

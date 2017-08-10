@@ -4,6 +4,7 @@ public class Token {
     private boolean turn;
     private int fields;
 
+    public static final int COUNT = 2;
     public static final int BLACK = 1;
     public static final int WHITE = 2;
 

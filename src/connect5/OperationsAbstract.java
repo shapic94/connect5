@@ -8,7 +8,10 @@ import entity.Token;
 
 public interface OperationsAbstract {
 
-    int[] play(Algorithm algorithm);
+    void test(Algorithm algorithm, Token black, Token white);
+    boolean testSameColumn(int[] columnHasToken);
+    Object[] init(int row, int col, int tokens, int times);
+    int[] play(Algorithm algorithm, Token black, Token white);
     void show(Algorithm algorithm);
     void add(Algorithm algorithm, Token black, Token white);
     void addInGame(Algorithm algorithm, Token black, Token white, int random, int i);
