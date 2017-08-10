@@ -6,10 +6,6 @@ public class Token {
     private boolean winner;
     private String name;
 
-    public static final int COUNT = 2;
-    public static final int BLACK = 1;
-    public static final int WHITE = 2;
-
     public Token(String name, int fields, boolean turn, boolean winner) {
         this.name = name;
         this.turn = turn;

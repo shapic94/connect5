@@ -67,14 +67,14 @@ public class Operations implements OperationsAbstract {
             System.out.println("[Operations][test()] Testing...");
             for (int j = 0; j < algorithm.getTokens(); j++) {
                 random = ThreadLocalRandom.current().nextInt(0, algorithm.getCol());
-                token = ThreadLocalRandom.current().nextInt(1, Token.COUNT + 1);
+                token = ThreadLocalRandom.current().nextInt(1, Storage.COUNT + 1);
 
-                if (token == Token.BLACK) {
+                if (token == Storage.BLACK) {
                     black.setTurn(true);
                     white.setTurn(false);
                     add(algorithm, black, white);
 
-                } else if (token == Token.WHITE) {
+                } else if (token == Storage.WHITE) {
                     black.setTurn(false);
                     white.setTurn(true);
                     add(algorithm, black, white);
@@ -164,7 +164,7 @@ public class Operations implements OperationsAbstract {
             }
             while (true) {
                 // Check if column is full
-                if (algorithm.getGame()[i][random] == Token.BLACK || algorithm.getGame()[i][random] == Token.WHITE) {
+                if (algorithm.getGame()[i][random] == Storage.BLACK || algorithm.getGame()[i][random] == Storage.WHITE) {
                     algorithm.getFullColumn()[random] = false;
                     algorithm.setFullColumn(algorithm.getFullColumn());
                     break;
@@ -182,7 +182,7 @@ public class Operations implements OperationsAbstract {
                 }
 
                 // Check if next row in column is busy
-                if (algorithm.getGame()[i + 1][random] == Token.BLACK || algorithm.getGame()[i + 1][random] == Token.WHITE) {
+                if (algorithm.getGame()[i + 1][random] == Storage.BLACK || algorithm.getGame()[i + 1][random] == Storage.WHITE) {
 
                     // if connect5 was founded
                     if (!addInGame(algorithm, black, white, random, i)) {
@@ -207,11 +207,11 @@ public class Operations implements OperationsAbstract {
     @Override
     public boolean addInGame(Algorithm algorithm, Token black, Token white, int random, int i) {
         if (black.getTurn()) {
-            algorithm.getGame()[i][random] = Token.BLACK;
+            algorithm.getGame()[i][random] = Storage.BLACK;
             black.setTurn(false);
             white.setTurn(true);
         } else {
-            algorithm.getGame()[i][random] = Token.WHITE;
+            algorithm.getGame()[i][random] = Storage.WHITE;
             black.setTurn(true);
             white.setTurn(false);
         }
@@ -222,9 +222,9 @@ public class Operations implements OperationsAbstract {
         if (check(algorithm, i, random)) {
 
             // Check who is winner
-            if (algorithm.getGame()[i][random] == Token.BLACK) {
+            if (algorithm.getGame()[i][random] == Storage.BLACK) {
                 black.setWinner(true);
-            } else if (algorithm.getGame()[i][random] == Token.WHITE) {
+            } else if (algorithm.getGame()[i][random] == Storage.WHITE) {
                 white.setWinner(true);
             }
             return false;
@@ -538,9 +538,9 @@ public class Operations implements OperationsAbstract {
     public void turn(Algorithm algorithm, Token black, Token white) {
         for (int i = 0; i < algorithm.getRow(); i++) {
             for (int j = 0; j < algorithm.getCol(); j++) {
-                if (algorithm.getGame()[i][j] == Token.BLACK) {
+                if (algorithm.getGame()[i][j] == Storage.BLACK) {
                     black.setFields(black.getFields() + 1);
-                } else if (algorithm.getGame()[i][j] == Token.WHITE) {
+                } else if (algorithm.getGame()[i][j] == Storage.WHITE) {
                     white.setFields(white.getFields() + 1);
                 }
             }
