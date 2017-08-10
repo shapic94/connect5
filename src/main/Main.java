@@ -10,6 +10,7 @@ import entity.Token;
  * Black = 1
  * White = 2
  */
+//test
 public class Main {
 
     public static void main(String [] args) {
