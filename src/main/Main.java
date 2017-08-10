@@ -15,6 +15,7 @@ public class Main {
 
     public static void main(String [] args) {
         System.out.println("Welcome to connect5 games");
+        System.out.println("test1");
 
         // Rows
         int row = 10;
