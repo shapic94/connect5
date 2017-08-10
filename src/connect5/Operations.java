@@ -35,13 +35,15 @@ public class Operations implements OperationsAbstract {
         algorithm.setGame(new int[algorithm.getRow()][algorithm.getCol()]);
 
         // Create Tokens
-        Token black = new Token(0, false);
-        Token white = new Token(0, false);
+        Token black = new Token("Nebojsa", 0, false, false);
+        Token white = new Token("Aleksandar", 0, false, false);
 
         Object[] object = new Object[3];
         object[0] = algorithm;
         object[1] = black;
         object[2] = white;
+
+        test(algorithm, black, white);
 
         return object;
 
@@ -59,20 +61,42 @@ public class Operations implements OperationsAbstract {
         int[] columnHasToken = new int[algorithm.getCol()];
 
 
-        for (int i = 0; i < algorithm.getTokens(); i++) {
-            random = ThreadLocalRandom.current().nextInt(0, algorithm.getCol());
-            token = ThreadLocalRandom.current().nextInt(1, Token.COUNT + 1);
+        for (int i = 0; i < algorithm.getTimes(); i++) {
 
-            if (token == Token.BLACK) {
-                black.setTurn(true);
-                white.setTurn(false);
-                add(algorithm, black, white);
+            // Start test
+            System.out.println("[Operations][test()] Testing...");
+            for (int j = 0; j < algorithm.getTokens(); j++) {
+                random = ThreadLocalRandom.current().nextInt(0, algorithm.getCol());
+                token = ThreadLocalRandom.current().nextInt(1, Storage.COUNT + 1);
 
-            } else if (token == Token.WHITE) {
-                black.setTurn(false);
-                white.setTurn(true);
-                add(algorithm, black, white);
+                if (token == Storage.BLACK) {
+                    black.setTurn(true);
+                    white.setTurn(false);
+                    add(algorithm, black, white);
+
+                } else if (token == Storage.WHITE) {
+                    black.setTurn(false);
+                    white.setTurn(true);
+                    add(algorithm, black, white);
+                }
             }
+
+            // Show tested game
+            System.out.println("[Operations][test()] Tested Game");
+
+            // Play game
+            System.out.println("[Operations][test()] Play game");
+            algorithm.play(algorithm, black, white);
+            algorithm.show(algorithm);
+
+            // Winner
+            if (black.isWinner()) {
+                System.out.println("[Operations][test()] Cestitamo, " + black.getName() + ", Row: " + algorithm.getRowWinner() + ", Column: " + algorithm.getColWinner());
+            } else if (white.isWinner()) {
+                System.out.println("[Operations][test()] Cestitamo, " + white.getName() + ", Row: " + algorithm.getRowWinner() + ", Column: " + algorithm.getColWinner());
+            }
+
+            reset(algorithm, black, white);
         }
     }
 
@@ -96,7 +120,14 @@ public class Operations implements OperationsAbstract {
             if (checkFullGame(algorithm)) {
                 break;
             }
-            add(algorithm, black, white);
+
+            // Add and check if someone winn
+            int add = add(algorithm, black, white);
+            if (add == Storage.ADD_FULL) {
+                break;
+            } else if (add == Storage.ADD_FOUNDED) {
+                break;
+            }
         }
 
         return new int[0];
@@ -106,18 +137,23 @@ public class Operations implements OperationsAbstract {
     public void show(Algorithm algorithm) {
         for(int i = 0; i < algorithm.getRow(); i++) {
             for(int j = 0; j < algorithm.getCol(); j++) {
-                System.out.print(algorithm.getGame()[i][j]);
+                System.out.print(algorithm.getGame()[i][j] + " ");
             }
             System.out.println();
         }
     }
 
     @Override
-    public void add(Algorithm algorithm, Token black, Token white) {
+    public int add(Algorithm algorithm, Token black, Token white) {
         while (true) {
             if (checkFullGame(algorithm)) {
-                System.out.println("[Operations] Popunjeno");
-                break;
+                System.out.println("[Operations][add()] Popunjeno");
+
+                // Check if there is no winner
+                if (!black.isWinner() && !white.isWinner()) {
+                    System.out.println("[Operations][add()] Nema pobednika");
+                }
+                return Storage.ADD_FULL;
             }
             int random = ThreadLocalRandom.current().nextInt(0, algorithm.getCol());
             int i = 0;
@@ -128,7 +164,7 @@ public class Operations implements OperationsAbstract {
             }
             while (true) {
                 // Check if column is full
-                if (algorithm.getGame()[i][random] == Token.BLACK || algorithm.getGame()[i][random] == Token.WHITE) {
+                if (algorithm.getGame()[i][random] == Storage.BLACK || algorithm.getGame()[i][random] == Storage.WHITE) {
                     algorithm.getFullColumn()[random] = false;
                     algorithm.setFullColumn(algorithm.getFullColumn());
                     break;
@@ -136,13 +172,24 @@ public class Operations implements OperationsAbstract {
 
                 // Check if next row in column is bigger than last
                 if (i + 1 >= algorithm.getRow()) {
-                    addInGame(algorithm, black, white, random, i);
+                    // if connect5 was founded
+                    if (!addInGame(algorithm, black, white, random, i)) {
+                        algorithm.setRowWinner(i);
+                        algorithm.setColWinner(random);
+                        return Storage.ADD_FOUNDED;
+                    }
                     break;
                 }
 
                 // Check if next row in column is busy
-                if (algorithm.getGame()[i + 1][random] == Token.BLACK || algorithm.getGame()[i + 1][random] == Token.WHITE) {
-                    addInGame(algorithm, black, white, random, i);
+                if (algorithm.getGame()[i + 1][random] == Storage.BLACK || algorithm.getGame()[i + 1][random] == Storage.WHITE) {
+
+                    // if connect5 was founded
+                    if (!addInGame(algorithm, black, white, random, i)) {
+                        algorithm.setRowWinner(i);
+                        algorithm.setColWinner(random);
+                        return Storage.ADD_FOUNDED;
+                    }
                     break;
                 }
                 i++;
@@ -154,25 +201,327 @@ public class Operations implements OperationsAbstract {
             }
             break;
         }
+        return Storage.ADD_NEXT;
     }
 
     @Override
-    public void addInGame(Algorithm algorithm, Token black, Token white, int random, int i) {
+    public boolean addInGame(Algorithm algorithm, Token black, Token white, int random, int i) {
         if (black.getTurn()) {
-            algorithm.getGame()[i][random] = Token.BLACK;
+            algorithm.getGame()[i][random] = Storage.BLACK;
             black.setTurn(false);
             white.setTurn(true);
         } else {
-            algorithm.getGame()[i][random] = Token.WHITE;
+            algorithm.getGame()[i][random] = Storage.WHITE;
             black.setTurn(true);
             white.setTurn(false);
         }
+
         algorithm.setGame(algorithm.getGame());
+
+        // if connect5 was founded
+        if (check(algorithm, i, random)) {
+
+            // Check who is winner
+            if (algorithm.getGame()[i][random] == Storage.BLACK) {
+                black.setWinner(true);
+            } else if (algorithm.getGame()[i][random] == Storage.WHITE) {
+                white.setWinner(true);
+            }
+            return false;
+        }
+
+        return true;
     }
 
     @Override
-    public void check(Algorithm algorithm) {
+    public boolean check(Algorithm algorithm, int row, int col) {
+        // Number of possible cases
+        int cases = 4;
 
+        // Counter
+        int i = 1;
+
+        // Connects
+        int connects = 1;
+
+        boolean left = true;
+        boolean right = true;
+
+
+        while (true) {
+            // Check if last case is done
+            if (i > cases) {
+                break;
+            }
+
+            if (i == 1) {
+                // First case --
+
+                int currentRow = row;
+                int currentCol = col;
+
+                while (true) {
+                    if (left) {
+                        // Shift to the left
+                        currentCol = currentCol - 1;
+
+                        // Check if still in a game
+                        if (currentCol >= 0) {
+                            if (algorithm.getGame()[row][currentCol] == algorithm.getGame()[row][col]) {
+                                // One more connect
+                                connects++;
+
+                                if (connects == 5) {
+                                    System.out.println("[Operations][check()] Horizontalno");
+                                    return true;
+                                }
+                            } else {
+                                // Reset currentCol, try right side
+                                currentCol = col;
+
+                                left = false;
+                                right = true;
+                            }
+                        } else {
+                            // Reset currentCol, try right side
+                            currentCol = col;
+
+                            left = false;
+                            right = true;
+                        }
+                    } else if (right) {
+                        // Shift to the right
+                        currentCol = currentCol + 1;
+
+                        // Check if still in a game
+                        if (currentCol < algorithm.getCol()) {
+                            if (algorithm.getGame()[row][currentCol] == algorithm.getGame()[row][col]) {
+                                // One more connect
+                                connects++;
+
+                                if (connects == 5) {
+                                    System.out.println("[Operations][check()] Horizontalno");
+                                    return true;
+                                }
+                            } else {
+                                i++;
+                                left = true;
+                                right = true;
+                                break;
+                            }
+                        } else {
+                            i++;
+                            left = true;
+                            right = true;
+                            break;
+                        }
+                    }
+                }
+                connects = 1;
+            } else if (i == 2) {
+                // Second case |
+
+                int currentRow = row;
+                int currentCol = col;
+
+                while (true) {
+                    if (left) {
+                        // Shift to the left
+                        currentRow = currentRow - 1;
+
+                        // Check if still in a game
+                        if (currentRow >= 0) {
+                            if (algorithm.getGame()[currentRow][col] == algorithm.getGame()[row][col]) {
+                                // One more connect
+                                connects++;
+
+                                if (connects == 5) {
+                                    System.out.println("[Operations][check()] Vertikalno");
+                                    return true;
+                                }
+                            } else {
+                                // Reset currentCol, try right side
+                                currentRow = row;
+
+                                left = false;
+                                right = true;
+                            }
+                        } else {
+                            // Reset currentCol, try right side
+                            currentRow = row;
+
+                            left = false;
+                            right = true;
+                        }
+                    } else if (right) {
+                        // Shift to the right
+                        currentRow = currentRow + 1;
+
+                        // Check if still in a game
+                        if (currentRow < algorithm.getRow()) {
+                            if (algorithm.getGame()[currentRow][col] == algorithm.getGame()[row][col]) {
+                                // One more connect
+                                connects++;
+
+                                if (connects == 5) {
+                                    System.out.println("[Operations][check()] Vertikalno");
+                                    return true;
+                                }
+                            } else {
+                                i++;
+                                left = true;
+                                right = true;
+                                break;
+                            }
+                        } else {
+                            i++;
+                            left = true;
+                            right = true;
+                            break;
+                        }
+                    }
+                }
+                connects = 1;
+            } else if (i == 3) {
+                // Third case \
+
+                int currentRow = row;
+                int currentCol = col;
+
+                while (true) {
+                    if (left) {
+                        // Shift to the left
+                        currentRow = currentRow - 1;
+                        currentCol = currentCol - 1;
+
+                        // Check if still in a game
+                        if (currentRow >= 0 && currentCol >= 0) {
+                            if (algorithm.getGame()[currentRow][currentCol] == algorithm.getGame()[row][col]) {
+                                // One more connect
+                                connects++;
+
+                                if (connects == 5) {
+                                    System.out.println("[Operations][check()] Ukoso levo gore, desno dole");
+                                    return true;
+                                }
+                            } else {
+                                // Reset currentCol, try right side
+                                currentRow = row;
+                                currentCol = col;
+
+                                left = false;
+                                right = true;
+                            }
+                        } else {
+                            // Reset currentCol, try right side
+                            currentRow = row;
+                            currentCol = col;
+
+                            left = false;
+                            right = true;
+                        }
+                    } else if (right) {
+                        // Shift to the right
+                        currentRow = currentRow + 1;
+                        currentCol = currentCol + 1;
+
+                        // Check if still in a game
+                        if (currentRow < algorithm.getRow() && currentCol < algorithm.getCol()) {
+                            if (algorithm.getGame()[currentRow][currentCol] == algorithm.getGame()[row][col]) {
+                                // One more connect
+                                connects++;
+
+                                if (connects == 5) {
+                                    System.out.println("[Operations][check()] Ukoso levo gore, desno dole");
+                                    return true;
+                                }
+                            } else {
+                                i++;
+                                left = true;
+                                right = true;
+                                break;
+                            }
+                        } else {
+                            i++;
+                            left = true;
+                            right = true;
+                            break;
+                        }
+                    }
+                }
+                connects = 1;
+            } else if (i == 4) {
+                // Forth case /
+
+                int currentRow = row;
+                int currentCol = col;
+
+                while (true) {
+                    if (left) {
+                        // Shift to the left
+                        currentRow = currentRow + 1;
+                        currentCol = currentCol + 1;
+
+                        // Check if still in a game
+                        if (currentRow < algorithm.getRow() && currentCol < algorithm.getCol()) {
+                            if (algorithm.getGame()[currentRow][currentCol] == algorithm.getGame()[row][col]) {
+                                // One more connect
+                                connects++;
+
+                                if (connects == 5) {
+                                    System.out.println("[Operations][check()] Ukoso desno gore, levo dole");
+                                    return true;
+                                }
+                            } else {
+                                // Reset currentCol, try right side
+                                currentRow = row;
+                                currentCol = col;
+
+                                left = false;
+                                right = true;
+                            }
+                        } else {
+                            // Reset currentCol, try right side
+                            currentRow = row;
+                            currentCol = col;
+
+                            left = false;
+                            right = true;
+                        }
+                    } else if (right) {
+                        // Shift to the right
+                        currentRow = currentRow - 1;
+                        currentCol = currentCol - 1;
+
+                        // Check if still in a game
+                        if (currentRow >= 0 && currentCol >= 0) {
+                            if (algorithm.getGame()[currentRow][currentCol] == algorithm.getGame()[row][col]) {
+                                // One more connect
+                                connects++;
+
+                                if (connects == 5) {
+                                    System.out.println("[Operations][check()] Ukoso desno gore, levo dole");
+                                    return true;
+                                }
+                            } else {
+                                i++;
+                                left = true;
+                                right = true;
+                                break;
+                            }
+                        } else {
+                            i++;
+                            left = true;
+                            right = true;
+                            break;
+                        }
+                    }
+                }
+                connects = 1;
+            }
+        }
+
+        return false;
     }
 
     @Override
@@ -189,20 +538,32 @@ public class Operations implements OperationsAbstract {
     public void turn(Algorithm algorithm, Token black, Token white) {
         for (int i = 0; i < algorithm.getRow(); i++) {
             for (int j = 0; j < algorithm.getCol(); j++) {
-                if (algorithm.getGame()[i][j] == Token.BLACK) {
+                if (algorithm.getGame()[i][j] == Storage.BLACK) {
                     black.setFields(black.getFields() + 1);
-                } else if (algorithm.getGame()[i][j] == Token.WHITE) {
+                } else if (algorithm.getGame()[i][j] == Storage.WHITE) {
                     white.setFields(white.getFields() + 1);
                 }
             }
         }
 
         if (black.getFields() < white.getFields()) {
-            System.out.println("[Operations] Black token has first turn.");
+            System.out.println("[Operations][turn()] Black token has first turn.");
             black.setTurn(true);
         } else {
-            System.out.println("[Operations] White token has first turn.");
+            System.out.println("[Operations][turn()] White token has first turn.");
             white.setTurn(true);
         }
+    }
+
+    @Override
+    public void reset(Algorithm algorithm, Token black, Token white) {
+
+        algorithm.setRowWinner(0);
+        algorithm.setColWinner(0);
+        algorithm.setFullColumnTrue();
+        algorithm.setGame(new int[algorithm.getRow()][algorithm.getCol()]);
+
+        black.setWinner(false);
+        white.setWinner(false);
     }
 }
