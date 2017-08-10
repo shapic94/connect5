@@ -13,9 +13,10 @@ public interface OperationsAbstract {
     Object[] init(int row, int col, int tokens, int times);
     int[] play(Algorithm algorithm, Token black, Token white);
     void show(Algorithm algorithm);
-    void add(Algorithm algorithm, Token black, Token white);
-    void addInGame(Algorithm algorithm, Token black, Token white, int random, int i);
-    void check(Algorithm algorithm);
+    boolean add(Algorithm algorithm, Token black, Token white);
+    boolean addInGame(Algorithm algorithm, Token black, Token white, int random, int i);
+    boolean check(Algorithm algorithm, int row, int col);
     boolean checkFullGame(Algorithm algorithm);
     void turn(Algorithm algorithm, Token black, Token white);
+    void reset(Algorithm algorithm, Token black, Token white);
 }
