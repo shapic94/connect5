@@ -9,6 +9,8 @@ public class Algorithm extends Operations {
 
     private int row;
     private int col;
+    private int rowWinner;
+    private int colWinner;
     private int tokens;
     private int times;
     private int[][] game;
@@ -68,4 +70,20 @@ public class Algorithm extends Operations {
     public int getTimes() { return times; }
 
     public void setTimes(int times) { this.times = times; }
+
+    public int getRowWinner() {
+        return rowWinner;
+    }
+
+    public void setRowWinner(int rowWinner) {
+        this.rowWinner = rowWinner;
+    }
+
+    public int getColWinner() {
+        return colWinner;
+    }
+
+    public void setColWinner(int colWinner) {
+        this.colWinner = colWinner;
+    }
 }

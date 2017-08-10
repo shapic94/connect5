@@ -36,23 +36,5 @@ public class Main {
         // Cast Tokens from object
         Token black = (Token) object[1];
         Token white = (Token) object[2];
-
-        // Show started game
-        System.out.println("[Main] Empty Game");
-        algorithm.show(algorithm);
-
-        // Start test
-        System.out.println("[Main] Testing...");
-        algorithm.test(algorithm, black, white);
-
-        // Show tested game
-        System.out.println("[Main] Tested Game");
-        algorithm.show(algorithm);
-
-        // Play game
-        System.out.println("[Main] Play game");
-        algorithm.play(algorithm, black, white);
-        algorithm.show(algorithm);
-
     }
 }
