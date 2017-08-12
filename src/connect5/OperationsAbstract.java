@@ -14,7 +14,8 @@ public interface OperationsAbstract {
     int[] play(Algorithm algorithm, Token black, Token white);
     void show(Algorithm algorithm);
     int add(Algorithm algorithm, Token black, Token white);
-    boolean addInGame(Algorithm algorithm, Token black, Token white, int random, int i);
+    void addWinner(Algorithm algorithm, Token black, Token white, int row, int col);
+    boolean addInGame(Algorithm algorithm, Token black, Token white, int row, int col);
     boolean check(Algorithm algorithm, int row, int col);
     boolean checkFullGame(Algorithm algorithm);
     void turn(Algorithm algorithm, Token black, Token white);

@@ -1,6 +1,7 @@
 package connect5;
 
 import entity.Token;
+import gui.Component;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -35,8 +36,8 @@ public class Operations implements OperationsAbstract {
         algorithm.setGame(new int[algorithm.getRow()][algorithm.getCol()]);
 
         // Create Tokens
-        Token black = new Token("Nebojsa", 0, false, false);
-        Token white = new Token("Aleksandar", 0, false, false);
+        Token black = new Token("Nebojsa", 0, false, false, 0);
+        Token white = new Token("Aleksandar", 0, false, false, 0);
 
         Object[] object = new Object[3];
         object[0] = algorithm;
@@ -65,6 +66,8 @@ public class Operations implements OperationsAbstract {
 
             // Start test
             System.out.println("[Operations][test()] Testing...");
+            Component.getInstance().getResultL().setText("Testing...");
+
             for (int j = 0; j < algorithm.getTokens(); j++) {
                 random = ThreadLocalRandom.current().nextInt(0, algorithm.getCol());
                 token = ThreadLocalRandom.current().nextInt(1, Storage.COUNT + 1);
@@ -98,6 +101,18 @@ public class Operations implements OperationsAbstract {
 
             reset(algorithm, black, white);
         }
+
+        // Global winner
+        System.out.println(black.getNumberOfWins());
+        System.out.println(white.getNumberOfWins());
+        System.out.println("---------------------------------------------------------------------------------");
+        if (black.getNumberOfWins() == white.getNumberOfWins()) {
+            Component.getInstance().getResultL().setText("Ovo je neverovatno! Imate isti broj pobeda!");
+        } else if (black.getNumberOfWins() > white.getNumberOfWins()) {
+            Component.getInstance().getResultL().setText("Cestitamo, " + black.getName() + ", imate " + black.getNumberOfWins() + "pobeda i " + ( (100 * black.getNumberOfWins()) / algorithm.getTimes()) + "% sanse u odnosu na " + white.getName() + " koji ima " + ( (100 * white.getNumberOfWins()) / algorithm.getTimes()) + "%");
+        } else if (black.getNumberOfWins() < white.getNumberOfWins()) {
+            Component.getInstance().getResultL().setText("Cestitamo, " + white.getName() + ", imate " + white.getNumberOfWins() + "pobeda i " + ( (100 * white.getNumberOfWins()) / algorithm.getTimes()) + "% sanse u odnosu na " + black.getName() + " koji ima " + ( (100 * black.getNumberOfWins()) / algorithm.getTimes()) + "%");
+        }
     }
 
     @Override
@@ -114,6 +129,9 @@ public class Operations implements OperationsAbstract {
     public int[] play(Algorithm algorithm, Token black, Token white) {
 
         turn(algorithm, black, white);
+
+        //
+        Component.getInstance().getResultL().setText("Playing...");
 
         while(true) {
             // Check if table is full
@@ -173,9 +191,9 @@ public class Operations implements OperationsAbstract {
                 // Check if next row in column is bigger than last
                 if (i + 1 >= algorithm.getRow()) {
                     // if connect5 was founded
-                    if (!addInGame(algorithm, black, white, random, i)) {
-                        algorithm.setRowWinner(i);
-                        algorithm.setColWinner(random);
+                    if (!addInGame(algorithm, black, white, i, random)) {
+                        // Add winner
+                        addWinner(algorithm, black, white, i, random);
                         return Storage.ADD_FOUNDED;
                     }
                     break;
@@ -185,9 +203,9 @@ public class Operations implements OperationsAbstract {
                 if (algorithm.getGame()[i + 1][random] == Storage.BLACK || algorithm.getGame()[i + 1][random] == Storage.WHITE) {
 
                     // if connect5 was founded
-                    if (!addInGame(algorithm, black, white, random, i)) {
-                        algorithm.setRowWinner(i);
-                        algorithm.setColWinner(random);
+                    if (!addInGame(algorithm, black, white, i, random)) {
+                        // Add winner
+                        addWinner(algorithm, black, white, i, random);
                         return Storage.ADD_FOUNDED;
                     }
                     break;
@@ -205,13 +223,30 @@ public class Operations implements OperationsAbstract {
     }
 
     @Override
-    public boolean addInGame(Algorithm algorithm, Token black, Token white, int random, int i) {
+    public void addWinner(Algorithm algorithm, Token black, Token white, int row, int col) {
+        algorithm.setRowWinner(row);
+        algorithm.setColWinner(col);
+
+
+        // if black win
+        if (algorithm.getGame()[algorithm.getRowWinner()][algorithm.getColWinner()] == Storage.BLACK) {
+            black.setNumberOfWins(black.getNumberOfWins() + 1);
+        }
+
+        // if white win
+        if (algorithm.getGame()[algorithm.getRowWinner()][algorithm.getColWinner()] == Storage.WHITE) {
+            white.setNumberOfWins(white.getNumberOfWins() + 1);
+        }
+    }
+
+    @Override
+    public boolean addInGame(Algorithm algorithm, Token black, Token white, int row, int col) {
         if (black.getTurn()) {
-            algorithm.getGame()[i][random] = Storage.BLACK;
+            algorithm.getGame()[row][col] = Storage.BLACK;
             black.setTurn(false);
             white.setTurn(true);
         } else {
-            algorithm.getGame()[i][random] = Storage.WHITE;
+            algorithm.getGame()[row][col] = Storage.WHITE;
             black.setTurn(true);
             white.setTurn(false);
         }
@@ -219,12 +254,12 @@ public class Operations implements OperationsAbstract {
         algorithm.setGame(algorithm.getGame());
 
         // if connect5 was founded
-        if (check(algorithm, i, random)) {
+        if (check(algorithm, row, col)) {
 
             // Check who is winner
-            if (algorithm.getGame()[i][random] == Storage.BLACK) {
+            if (algorithm.getGame()[row][col] == Storage.BLACK) {
                 black.setWinner(true);
-            } else if (algorithm.getGame()[i][random] == Storage.WHITE) {
+            } else if (algorithm.getGame()[row][col] == Storage.WHITE) {
                 white.setWinner(true);
             }
             return false;
