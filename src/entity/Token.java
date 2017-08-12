@@ -4,13 +4,15 @@ public class Token {
     private boolean turn;
     private int fields;
     private boolean winner;
+    private int numberOfWins;
     private String name;
 
-    public Token(String name, int fields, boolean turn, boolean winner) {
+    public Token(String name, int fields, boolean turn, boolean winner, int numberOfWins) {
         this.name = name;
         this.turn = turn;
         this.fields = fields;
         this.winner = winner;
+        this.numberOfWins = numberOfWins;
     }
 
     public int getFields() {
@@ -44,5 +46,17 @@ public class Token {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean isTurn() {
+        return turn;
+    }
+
+    public int getNumberOfWins() {
+        return numberOfWins;
+    }
+
+    public void setNumberOfWins(int numberOfWins) {
+        this.numberOfWins = numberOfWins;
     }
 }
