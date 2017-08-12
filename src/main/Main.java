@@ -1,6 +1,5 @@
 package main;
 
-//import gui.FX;
 import connect5.Operations;
 import gui.Component;
 import javafx.application.Application;
@@ -19,10 +18,10 @@ import javafx.stage.Stage;
  * Black = 1
  * White = 2
  */
+
 public class Main extends Application {
 
     public static void main(String [] args) {
-//        launch(args);
         System.out.println("Welcome to connect5 game");
         launch(args);
 
