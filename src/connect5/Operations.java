@@ -69,11 +69,17 @@ public class Operations implements OperationsAbstract {
                 random = ThreadLocalRandom.current().nextInt(0, algorithm.getCol());
                 token = ThreadLocalRandom.current().nextInt(1, Storage.COUNT + 1);
 
+                // Check if same TOKEN two times
+                if (token == Storage.BLACK && !black.getTurn() && j != 0) {
+                    token = Storage.WHITE;
+                } else if (token == Storage.WHITE && !white.getTurn() && j != 0) {
+                    token = Storage.BLACK;
+                }
+
                 if (token == Storage.BLACK) {
                     black.setTurn(true);
                     white.setTurn(false);
                     add(algorithm, black, white);
-
                 } else if (token == Storage.WHITE) {
                     black.setTurn(false);
                     white.setTurn(true);
