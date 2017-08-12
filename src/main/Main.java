@@ -1,8 +1,6 @@
 package main;
 
-import connect5.Algorithm;
 import connect5.Operations;
-import entity.Token;
 
 import javax.swing.*;
 import java.awt.*;
