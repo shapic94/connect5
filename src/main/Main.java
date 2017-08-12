@@ -96,6 +96,22 @@ public class Main extends Application {
 
         layout.setHgap(25);
 
+        Component.getInstance().getPlayer1HB().getChildren().addAll(Component.getInstance().getPlayer1L(), Component.getInstance().getPlayer1TF());
+        Component.getInstance().getPlayer1HB().setAlignment(Pos.CENTER);
+        Component.getInstance().getPlayer1HB().setSpacing(20);
+        Component.getInstance().getPlayer1HB().setPrefHeight(50);
+        Component.getInstance().getPlayer1HB().setPrefWidth(640);
+        Component.getInstance().getPlayer1L().setPrefWidth(240);
+        Component.getInstance().getPlayer1TF().setPrefWidth(400);
+
+        Component.getInstance().getPlayer2HB().getChildren().addAll(Component.getInstance().getPlayer2L(), Component.getInstance().getPlayer2TF());
+        Component.getInstance().getPlayer2HB().setAlignment(Pos.CENTER);
+        Component.getInstance().getPlayer2HB().setSpacing(20);
+        Component.getInstance().getPlayer2HB().setPrefHeight(50);
+        Component.getInstance().getPlayer2HB().setPrefWidth(640);
+        Component.getInstance().getPlayer2L().setPrefWidth(240);
+        Component.getInstance().getPlayer2TF().setPrefWidth(400);
+
         Component.getInstance().getRowHB().getChildren().addAll(Component.getInstance().getRowL(), Component.getInstance().getRowTF());
         Component.getInstance().getRowHB().setAlignment(Pos.CENTER_LEFT);
         Component.getInstance().getRowHB().setSpacing(20);
@@ -128,12 +144,29 @@ public class Main extends Application {
         Component.getInstance().getTimesL().setPrefWidth(240);
         Component.getInstance().getTimesTF().setPrefWidth(400);
 
-        Component.getInstance().getStartHB().getChildren().add(Component.getInstance().getStartB());
-        Component.getInstance().getTokenHB().setAlignment(Pos.CENTER);
-        Component.getInstance().getTokenHB().setSpacing(20);
-        Component.getInstance().getTokenHB().setPrefHeight(50);
-        Component.getInstance().getTokenHB().setPrefWidth(640);
-        Component.getInstance().getStartB().setPrefWidth(250);
+        Component.getInstance().getStartHB().getChildren().addAll(Component.getInstance().getStartL(), Component.getInstance().getStartB());
+        Component.getInstance().getStartHB().setAlignment(Pos.CENTER_LEFT);
+        Component.getInstance().getStartHB().setSpacing(20);
+        Component.getInstance().getStartHB().setPrefHeight(50);
+        Component.getInstance().getStartHB().setPrefWidth(640);
+        Component.getInstance().getStartL().setPrefWidth(240);
+        Component.getInstance().getStartB().setPrefWidth(400);
+
+        Component.getInstance().getPlayer1BoxHB().getChildren().addAll(Component.getInstance().getPlayer1NameL(), Component.getInstance().getPlayer1ScoreL());
+        Component.getInstance().getPlayer1BoxHB().setAlignment(Pos.CENTER);
+        Component.getInstance().getPlayer1BoxHB().setSpacing(20);
+        Component.getInstance().getPlayer1BoxHB().setPrefHeight(50);
+        Component.getInstance().getPlayer1BoxHB().setPrefWidth(640);
+        Component.getInstance().getPlayer1NameL().setPrefWidth(240);
+        Component.getInstance().getPlayer1ScoreL().setPrefWidth(400);
+
+        Component.getInstance().getPlayer2BoxHB().getChildren().addAll(Component.getInstance().getPlayer2NameL(), Component.getInstance().getPlayer2ScoreL());
+        Component.getInstance().getPlayer2BoxHB().setAlignment(Pos.CENTER);
+        Component.getInstance().getPlayer2BoxHB().setSpacing(20);
+        Component.getInstance().getPlayer2BoxHB().setPrefHeight(50);
+        Component.getInstance().getPlayer2BoxHB().setPrefWidth(640);
+        Component.getInstance().getPlayer2NameL().setPrefWidth(240);
+        Component.getInstance().getPlayer2ScoreL().setPrefWidth(400);
 
         Component.getInstance().getResultHB().getChildren().add(Component.getInstance().getResultL());
         Component.getInstance().getTokenHB().setAlignment(Pos.CENTER);
@@ -145,11 +178,15 @@ public class Main extends Application {
 
         ObservableList list = layout.getChildren();
         list.addAll(
+                Component.getInstance().getPlayer1HB(),
+                Component.getInstance().getPlayer2HB(),
                 Component.getInstance().getRowHB(),
                 Component.getInstance().getColHB(),
                 Component.getInstance().getTokenHB(),
                 Component.getInstance().getTimesHB(),
                 Component.getInstance().getStartHB(),
+                Component.getInstance().getPlayer1BoxHB(),
+                Component.getInstance().getPlayer2BoxHB(),
                 Component.getInstance().getResultHB()
         );
 
@@ -164,15 +201,16 @@ public class Main extends Application {
             @Override
             public void handle(ActionEvent event) {
                 try {
+
+                    String player1 = Component.getInstance().getPlayer1TF().getText();
+                    String player2 = Component.getInstance().getPlayer2TF().getText();
                     int row = Integer.parseInt(Component.getInstance().getRowTF().getText());
                     int col = Integer.parseInt(Component.getInstance().getColTF().getText());
                     int tokens = Integer.parseInt(Component.getInstance().getTokensTF().getText());
                     int times = Integer.parseInt(Component.getInstance().getTimesTF().getText());
 
-                    System.out.println(row + " " + " "+col+" "+tokens+" "+times);
-
                     // Initializing
-                    Object[] object = new Operations().init(row, col, tokens, times);
+                    Object[] object = new Operations().init(player1, player2, row, col, tokens, times);
 
                 } catch (NumberFormatException err) {
                     System.out.println("Greska");

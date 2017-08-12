@@ -10,7 +10,7 @@ public interface OperationsAbstract {
 
     void test(Algorithm algorithm, Token black, Token white);
     boolean testSameColumn(int[] columnHasToken);
-    Object[] init(int row, int col, int tokens, int times);
+    Object[] init(String player1, String player2, int row, int col, int tokens, int times);
     int[] play(Algorithm algorithm, Token black, Token white);
     void show(Algorithm algorithm);
     int add(Algorithm algorithm, Token black, Token white);

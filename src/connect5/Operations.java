@@ -11,7 +11,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Operations implements OperationsAbstract {
 
     @Override
-    public Object[] init(int row, int col, int tokens, int times) {
+    public Object[] init(String player1, String player2, int row, int col, int tokens, int times) {
 
         // Create algorithm
         Algorithm algorithm = new Algorithm();
@@ -36,8 +36,8 @@ public class Operations implements OperationsAbstract {
         algorithm.setGame(new int[algorithm.getRow()][algorithm.getCol()]);
 
         // Create Tokens
-        Token black = new Token("Nebojsa", 0, false, false, 0);
-        Token white = new Token("Aleksandar", 0, false, false, 0);
+        Token black = new Token(player1, 0, false, false, 0);
+        Token white = new Token(player2, 0, false, false, 0);
 
         Object[] object = new Object[3];
         object[0] = algorithm;
@@ -112,12 +112,19 @@ public class Operations implements OperationsAbstract {
         System.out.println(black.getNumberOfWins());
         System.out.println(white.getNumberOfWins());
         System.out.println("---------------------------------------------------------------------------------");
+
+        // Set Names, number of wins and percent
+        Component.getInstance().getPlayer1NameL().setText(black.getName());
+        Component.getInstance().getPlayer1ScoreL().setText(black.getNumberOfWins() + " pobeda ( " + ((100 * black.getNumberOfWins()) / algorithm.getTimes()) + "% )");
+        Component.getInstance().getPlayer2NameL().setText(white.getName());
+        Component.getInstance().getPlayer2ScoreL().setText(white.getNumberOfWins() + " pobeda ( " + ((100 * white.getNumberOfWins()) / algorithm.getTimes()) + "% )");
+
         if (black.getNumberOfWins() == white.getNumberOfWins()) {
             Component.getInstance().getResultL().setText("Ovo je neverovatno! Imate isti broj pobeda!");
         } else if (black.getNumberOfWins() > white.getNumberOfWins()) {
-            Component.getInstance().getResultL().setText("Cestitamo, " + black.getName() + ", imate " + black.getNumberOfWins() + "pobeda i " + ( (100 * black.getNumberOfWins()) / algorithm.getTimes()) + "% sanse u odnosu na " + white.getName() + " koji ima " + ( (100 * white.getNumberOfWins()) / algorithm.getTimes()) + "%");
+            Component.getInstance().getResultL().setText("Cestitamo, " + black.getName() + ", imate " + (black.getNumberOfWins() - white.getNumberOfWins()) + " pobeda vise i " + (((100 * black.getNumberOfWins()) / algorithm.getTimes()) - ((100 * white.getNumberOfWins()) / algorithm.getTimes())) + "% sanse vise");
         } else if (black.getNumberOfWins() < white.getNumberOfWins()) {
-            Component.getInstance().getResultL().setText("Cestitamo, " + white.getName() + ", imate " + white.getNumberOfWins() + "pobeda i " + ( (100 * white.getNumberOfWins()) / algorithm.getTimes()) + "% sanse u odnosu na " + black.getName() + " koji ima " + ( (100 * black.getNumberOfWins()) / algorithm.getTimes()) + "%");
+            Component.getInstance().getResultL().setText("Cestitamo, " + white.getName() + ", imate " + (white.getNumberOfWins() - black.getNumberOfWins()) + " pobeda vise i " + (((100 * white.getNumberOfWins()) / algorithm.getTimes()) - ((100 * black.getNumberOfWins()) / algorithm.getTimes())) + "% sanse vise");
         }
     }
 
