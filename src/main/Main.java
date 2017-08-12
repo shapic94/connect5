@@ -1,8 +1,6 @@
 package main;
 
-import connect5.Algorithm;
 import connect5.Operations;
-import entity.Token;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,10 +13,12 @@ import java.awt.event.ActionListener;
  * Black = 1
  * White = 2
  */
+//test
 public class Main {
 
     public static void main(String [] args) {
-        System.out.println("Welcome to connect5 game");
+        System.out.println("Welcome to connect5 games");
+        System.out.println("test1");
 
         // Rows
         int row = 10;
