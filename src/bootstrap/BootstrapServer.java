@@ -1,5 +1,5 @@
 package bootstrap;
-import storage.Storage;
+import global.Storage;
 
 import java.io.IOException;
 import java.net.ServerSocket;

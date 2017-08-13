@@ -1,7 +1,6 @@
 package bootstrap;
 
-import graph.GraphSingleton;
-import storage.Storage;
+import global.Storage;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

@@ -1,12 +1,11 @@
 package servent;
-import storage.Storage;
+import global.Storage;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Properties;
-import java.util.Scanner;
 
 public class StartServent {
 	private int sPort;
@@ -26,7 +25,7 @@ public class StartServent {
 			int myPort = Integer.parseInt(prop.getProperty("myport"));
 
 			// Ovaj broj menjas svaki put kada pokreces novi servent(Znaci promenis, sejvujes i pokrenes)
-			myPort += 4;
+			myPort += 3;
 			ServentListener.LISTENER_PORT = myPort;
 			ServentListener listener = new ServentListener();
 

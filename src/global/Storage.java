@@ -1,4 +1,4 @@
-package storage;
+package global;
 
 public class Storage {
     // Game
@@ -35,4 +35,13 @@ public class Storage {
     // Node ---- > New Node ( if he is accepted )
     // NEW_ACCEPT ip:port
     public static final String NEW_ACCEPT = "NEW_ACCEPT";
+
+    // New Node ---- > Node ( if i am accepted, tell another child )
+    // NEW_ARRIVED ip:port
+    public static final String NEW_ARRIVED = "NEW_ARRIVED";
+
+    // Comunication
+    // Node
+    // key      id      address     port
+    // current  0,1,2   address     port
 }
