@@ -2,6 +2,7 @@ package connect5;
 
 import entity.Token;
 import gui.Component;
+import storage.Storage;
 
 import java.util.concurrent.ThreadLocalRandom;
 

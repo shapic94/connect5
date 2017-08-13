@@ -1,4 +1,6 @@
 package servent;
+import storage.Storage;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -16,17 +18,20 @@ public class StartServent {
 		int novi = 1;
 
 		try {
-			fis = new FileInputStream("src/servent.properties");				//citamo iz fajla portove
+			// citamo iz fajla portove
+			fis = new FileInputStream("src/servent.properties");
 			prop.load(fis);
 
+			// Uzimamo port za serventListener
+			int myPort = Integer.parseInt(prop.getProperty("myport"));
 
-			int myPort = Integer.parseInt(prop.getProperty("myport"));			//Uzimamo port za serventListener
-
-			myPort +=2;		//Ovaj broj menjas svaki put kada pokreces novi servent(Znaci promenis, sejvujes i pokrenes)
+			// Ovaj broj menjas svaki put kada pokreces novi servent(Znaci promenis, sejvujes i pokrenes)
+			myPort += 6;
 			ServentListener.LISTENER_PORT = myPort;
 			ServentListener listener = new ServentListener();
-			listener.startListener();											//Kreiramo Servent listener koji slusa na odredjenom portu (Ceka da se neki servent zakaci na njega)
 
+			// Kreiramo Servent listener koji slusa na odredjenom portu (Ceka da se neki servent zakaci na njega)
+			listener.startListener();
 
 			System.out.println("ServerListener: " + myPort);
 			boolean doPing = Boolean.parseBoolean(prop.getProperty("doping"));
@@ -34,24 +39,23 @@ public class StartServent {
 			if (doPing) {
 				int otherPort = Integer.parseInt(prop.getProperty("otherport"));
 
-				while(true) {													//Ceka da korisnik unese broj porta na koji ce da se salje poruka
+				//Ceka da korisnik unese broj porta na koji ce da se salje poruka
+				while(true) {
 					//System.out.println("Unesi port preko koga saljes ping: ");
 					//portCvora = scan.nextInt();
 					if(novi==1) {
-						Socket s = new Socket("127.0.0.2", 1234);
-						SocketUtils.writeLine(s, myPort + " novi");
+						Socket s = new Socket("127.0.0.1", 1234);
+						SocketUtils.writeLine(s, Storage.NEW + " " + myPort);
+						System.out.println(Storage.NEW + " " + myPort);
 						novi = 0;
 					}
 
 				}
 			}
-
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
-
 }

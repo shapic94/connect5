@@ -1,4 +1,8 @@
 package servent;
+import graph.Graph;
+import graph.GraphSingleton;
+import storage.Storage;
+
 import java.io.IOException;
 import java.net.Socket;
 
@@ -18,37 +22,52 @@ public class Responder implements Runnable{
 
 	@Override
 	public void run() {
+		// Read line
 		String line = SocketUtils.readLine(clientSocket);
 
-		String[] splitLine = line.split(" ");								//Client splituje poruku koju je dobio i u zavisnosti od poruke radi zadatak
-		//System.out.println(line);
-		String otherPort = splitLine[0];
-		String message = splitLine[1];
+		// Split line
+		String[] message = line.split(" ");
+		String key = message[0];
+		String nodePort = message[1];
 
 		try {
-			switch(message) {
-
-				case "prvi":
+			switch(key) {
+				case "FIRST":
 					System.out.println("Bootstrap kaze da sam prvi");
-					break;
-				case "ostali":
-					System.out.println("Bootstrap kaze da se javim " + otherPort);					//U ovom delu, CVOR koji se javio bootstrapu, dobija informaciju kome treba da se javi
-					String[] splitLine1 = otherPort.split(";");
-					String serventPort = splitLine1[1];
-					Socket serventSocket = new Socket("localhost", Integer.parseInt(serventPort));
-					SocketUtils.writeLine(serventSocket, ServentListener.LISTENER_PORT + " novi");
-					break;
-				case "novi":
-					System.out.println("Javio mi se novi cvor " + otherPort);						//Ovde je neki CVOR obavesten da mu se javio novi cvor, i salje mu informaciju da treba kod njega da se poveze
 
-					Socket serventSocket2 = new Socket("localhost", Integer.parseInt(otherPort));
-					SocketUtils.writeLine(serventSocket2, ServentListener.LISTENER_PORT + " prihvacen");
+					// Nebojsa
+					// If first, addVertex
+					GraphSingleton.getInstance().addVertex("0");
+					System.out.println(GraphSingleton.getInstance());
+
 					break;
-				case "prihvacen":																	//Ovde je cvor obavesten da moze da se poveze
+				case "NOT_FIRST":
+					// U ovom delu, CVOR koji se javio bootstrapu, dobija informaciju kome treba da se javi
+					System.out.println("Bootstrap kaze da se javim " + nodePort);
+
+					Socket serventSocket = new Socket("localhost", Integer.parseInt(nodePort));
+					SocketUtils.writeLine(serventSocket, Storage.NEW_INFO + " " + ServentListener.LISTENER_PORT);
+
+					// If not first, call rand node
+					// TODO: 8/13/17
+
+					break;
+				case "NEW_INFO":
+					// Ovde je neki CVOR obavesten da mu se javio novi cvor, i salje mu informaciju da treba kod njega da se poveze
+					System.out.println("Javio mi se novi cvor " + nodePort);
+
+					Socket serventSocket2 = new Socket("localhost", Integer.parseInt(nodePort));
+					SocketUtils.writeLine(serventSocket2, Storage.NEW_ACCEPT + " " + ServentListener.LISTENER_PORT);
+
+					break;
+				case "NEW_ACCEPT":
+					//Ovde je cvor obavesten da moze da se poveze
 					System.out.println("Prihvacen sam");
 					break;
+				default:
+					System.out.println("Wrong communication.");
+					break;
 			}
-
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

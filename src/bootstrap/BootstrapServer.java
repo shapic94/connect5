@@ -1,4 +1,6 @@
 package bootstrap;
+import storage.Storage;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -8,16 +10,19 @@ public class BootstrapServer {
 
 	public static void main(String[] args) {
 		try {
-			ServerSocket ss = new ServerSocket(1234);
-			System.out.println("BootstrapServer radi!!!");
+			// Create socket with
+			ServerSocket ss = new ServerSocket(Storage.BOOTSTRAP_PORT);
 
-			Vector<String> portovi = new Vector<String>();
+			// Bootstrap is working
+			System.out.println("Server started on port " + Storage.BOOTSTRAP_PORT);
+
+			// Create vector for all live nodes
+			Vector<String> nodes = new Vector<String>();
 
 			while(true){
 				Socket sock = ss.accept();
-				new Thread(new BootstrapServerThread(sock, portovi)).start();
+				new Thread(new BootstrapServerThread(sock, nodes)).start();
 			}
-
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
