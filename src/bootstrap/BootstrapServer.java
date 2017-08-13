@@ -23,6 +23,7 @@ public class BootstrapServer {
 				Socket sock = ss.accept();
 				new Thread(new BootstrapServerThread(sock, nodes)).start();
 			}
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -9,6 +9,9 @@ import java.net.Socket;
 public class Responder implements Runnable{
 
 	private Socket clientSocket;
+	private String[] ip;
+	private String address;
+	private int port;
 
 	public Responder(Socket clientSocket) {
 		this.clientSocket = clientSocket;
@@ -28,7 +31,7 @@ public class Responder implements Runnable{
 		// Split line
 		String[] message = line.split(" ");
 		String key = message[0];
-		String nodePort = message[1];
+		String nodeAddress = message[1];
 
 		try {
 			switch(key) {
@@ -43,9 +46,13 @@ public class Responder implements Runnable{
 					break;
 				case "NOT_FIRST":
 					// U ovom delu, CVOR koji se javio bootstrapu, dobija informaciju kome treba da se javi
-					System.out.println("Bootstrap kaze da se javim " + nodePort);
+					System.out.println("Bootstrap kaze da se javim " + nodeAddress);
 
-					Socket serventSocket = new Socket("localhost", Integer.parseInt(nodePort));
+					ip = nodeAddress.split(":");
+					address = ip[0];
+					port = Integer.parseInt(ip[1]);
+
+					Socket serventSocket = new Socket(address, port);
 					SocketUtils.writeLine(serventSocket, Storage.NEW_INFO + " " + ServentListener.LISTENER_PORT);
 
 					// If not first, call rand node
@@ -54,9 +61,13 @@ public class Responder implements Runnable{
 					break;
 				case "NEW_INFO":
 					// Ovde je neki CVOR obavesten da mu se javio novi cvor, i salje mu informaciju da treba kod njega da se poveze
-					System.out.println("Javio mi se novi cvor " + nodePort);
+					System.out.println("Javio mi se novi cvor " + nodeAddress);
 
-					Socket serventSocket2 = new Socket("localhost", Integer.parseInt(nodePort));
+//					ip = nodeAddress.split(":");
+//					address = ip[0];
+//					port = Integer.parseInt(ip[1]);
+
+					Socket serventSocket2 = new Socket(this.clientSocket.getInetAddress().getHostAddress(), Integer.parseInt(nodeAddress));
 					SocketUtils.writeLine(serventSocket2, Storage.NEW_ACCEPT + " " + ServentListener.LISTENER_PORT);
 
 					break;

@@ -13,20 +13,26 @@ public class Storage {
     // Bootstrap & servants communication
 
     // Server port
+    public static final String BOOTSTRAP_IP = "127.0.0.1";
     public static final int BOOTSTRAP_PORT = 1234;
 
     // New Node ---- > Server
+    // NEW port
     public static final String NEW = "NEW";
 
     // Server ---- > New Node ( if he is first )
+    // FIRST ip:port (ip:port from New Node)
     public static final String FIRST = "FIRST";
 
     // Server ---- > New Node ( if he is not first )
+    // NOT_FIRST ip:port (ip:port from random Node)
     public static final String NOT_FIRST = "NOT_FIRST";
 
     // New Node ---- > Node ( show me where to go )
+    // NEW_INFO ip:port
     public static final String NEW_INFO = "NEW_INFO";
 
     // Node ---- > New Node ( if he is accepted )
+    // NEW_ACCEPT ip:port
     public static final String NEW_ACCEPT = "NEW_ACCEPT";
 }

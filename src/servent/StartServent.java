@@ -26,7 +26,7 @@ public class StartServent {
 			int myPort = Integer.parseInt(prop.getProperty("myport"));
 
 			// Ovaj broj menjas svaki put kada pokreces novi servent(Znaci promenis, sejvujes i pokrenes)
-			myPort += 6;
+			myPort += 4;
 			ServentListener.LISTENER_PORT = myPort;
 			ServentListener listener = new ServentListener();
 
@@ -44,7 +44,7 @@ public class StartServent {
 					//System.out.println("Unesi port preko koga saljes ping: ");
 					//portCvora = scan.nextInt();
 					if(novi==1) {
-						Socket s = new Socket("127.0.0.1", 1234);
+						Socket s = new Socket(Storage.BOOTSTRAP_IP, Storage.BOOTSTRAP_PORT);
 						SocketUtils.writeLine(s, Storage.NEW + " " + myPort);
 						System.out.println(Storage.NEW + " " + myPort);
 						novi = 0;

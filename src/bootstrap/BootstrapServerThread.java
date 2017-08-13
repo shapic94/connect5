@@ -50,18 +50,19 @@ public class BootstrapServerThread implements Runnable {
 					// If he is first one
 					if (prvi == 1) {
 						System.out.println("Novi cvor");
-						Socket s = new Socket("127.0.0.1", nodePort);
+						Socket s = new Socket(sock.getInetAddress().getHostAddress(), nodePort);
 						BufferedWriter w = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
 
-						// Obavestavamo Servent da je prvi
-						w.write(Storage.FIRST + " " + nodePort);
-						System.out.println(Storage.FIRST + " " + nodePort);
+						// Create and send IP to FIRST NODE
+						String nodeAddress = sock.getInetAddress().getHostAddress() + ":" + Integer.toString(nodePort);
+						w.write(Storage.FIRST + " " + nodeAddress);
+						System.out.println(Storage.FIRST + " " + nodeAddress);
 
 						// First is done
 						prvi = 0;
 
 						// Dodajemo u nas niz IP adrese i portove cvorova
-						nodes.add(sock.getInetAddress().getHostAddress() + ";" + Integer.toString(nodePort));
+						nodes.add(nodeAddress);
 
 						w.flush();
 						s.close();
@@ -72,19 +73,19 @@ public class BootstrapServerThread implements Runnable {
 						break;
 					} else {
 						System.out.println("Ostali cvor");
-						Socket s = new Socket("127.0.0.1", nodePort);
+						Socket s = new Socket(sock.getInetAddress().getHostAddress(), nodePort);
 						BufferedWriter w = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
 
 						Random rand = new Random();
 						String randNodeAddress = nodes.get(rand.nextInt(nodes.size()));
 
-						String[] ip = randNodeAddress.split(";");
-						String randNodePort = ip[1];
+//						String[] ip = randNodeAddress.split(";");
+//						String randNodePort = ip[1];
 
-						w.write(Storage.NOT_FIRST + " " + randNodePort);
-						System.out.println(Storage.NOT_FIRST + " " + randNodePort);
+						w.write(Storage.NOT_FIRST + " " + randNodeAddress);
+						System.out.println(Storage.NOT_FIRST + " " + randNodeAddress);
 
-						nodes.add(sock.getInetAddress().getHostAddress() + ";" + Integer.toString(nodePort));
+						nodes.add(sock.getInetAddress().getHostAddress() + ":" + Integer.toString(nodePort));
 
 						w.flush();
 						s.close();
