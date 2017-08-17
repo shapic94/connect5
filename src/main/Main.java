@@ -1,6 +1,7 @@
 package main;
 
 import connect5.Operations;
+import global.Storage;
 import gui.Component;
 import javafx.application.Application;
 import javafx.collections.ObservableList;
@@ -10,6 +11,11 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import servent.ServentListener;
+import servent.SocketUtils;
+
+import java.io.IOException;
+import java.net.Socket;
 
 
 /**
@@ -200,8 +206,8 @@ public class Main extends Application {
         Component.getInstance().getStartB().setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
+                Socket socket = null;
                 try {
-
                     String player1 = Component.getInstance().getPlayer1TF().getText();
                     String player2 = Component.getInstance().getPlayer2TF().getText();
                     int row = Integer.parseInt(Component.getInstance().getRowTF().getText());
@@ -209,13 +215,33 @@ public class Main extends Application {
                     int tokens = Integer.parseInt(Component.getInstance().getTokensTF().getText());
                     int times = Integer.parseInt(Component.getInstance().getTimesTF().getText());
 
-                    // Initializing
-                    Object[] object = new Operations().init(player1, player2, row, col, tokens, times);
+                    if (!player1.equals("") && !player2.equals("") && row != 0 && col != 0 && tokens != 0 && times != 0) {
+                        socket = new Socket(Storage.BOOTSTRAP_IP, Storage.BOOTSTRAP_PORT);
+
+                        // GUI_INFO ip:port player1,player2,row,col,tokens,times
+                        SocketUtils.writeLine(
+                                socket,
+                                Storage.GUI_INFO + " " +
+                                socket.getInetAddress().getHostAddress() + ":" +
+                                socket.getPort() + " " +
+                                player1 + "," +
+                                player2 + "," +
+                                row + "," +
+                                col + "," +
+                                tokens + "," +
+                                times + ",");
+                    }
+
+//                    // Initializing
+//                    Object[] object = new Operations().init(player1, player2, row, col, tokens, times);
 
                 } catch (NumberFormatException err) {
                     System.out.println("Greska");
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         });
     }
+
 }

@@ -40,8 +40,26 @@ public class Storage {
     // NEW_ARRIVED ip:port
     public static final String NEW_ARRIVED = "NEW_ARRIVED";
 
+    // GUI ---- > Server
+    // GUI_INFO
+    public static final String GUI_INFO = "GUI_INFO";
+
+    // Parent ---- > Nodes
+    public static final String PLAY = "PLAY";
+
     // Comunication
     // Node
     // key      id      address     port
     // current  0,1,2   address     port
+
+
+    public static final String NOTIFY_GLOBAL_PARENT = "NOTIFY_GLOBAL_PARENT";
+    public static final String NOTIFY_PARENT = "NOTIFY_PARENT";
+    public static final String NOTIFY_CHILD = "NOTIFY_CHILD";
+    public static final String FIRST_NODE = "FIRST_NODE";
+    public static final String NODE = "NODE";
+    public static final String ACCEPT_NODE = "ACCEPT_NODE";
+
+    public static final String NODE_1 = "1";
+    public static final String NODE_2 = "2";
 }

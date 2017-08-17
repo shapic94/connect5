@@ -9,27 +9,27 @@ public class Component {
 
     private HBox player1HB = new HBox();
     private Label player1L = new Label("First player : ");
-    private TextField player1TF = new TextField();
+    private TextField player1TF = new TextField("Marko");
 
     private HBox player2HB = new HBox();
     private Label player2L = new Label("Second player : ");
-    private TextField player2TF = new TextField();
+    private TextField player2TF = new TextField("Darko");
 
     private HBox rowHB = new HBox();
     private Label rowL = new Label("Number of rows : ");
-    private TextField rowTF = new TextField();
+    private TextField rowTF = new TextField("10");
 
     private HBox colHB = new HBox();
     private Label colL = new Label("Number of columns : ");
-    private TextField colTF = new TextField();
+    private TextField colTF = new TextField("10");
 
     private HBox tokenHB = new HBox();
     private Label tokensL = new Label("Number of tokens : ");
-    private TextField tokensTF = new TextField();
+    private TextField tokensTF = new TextField("5");
 
     private HBox timesHB = new HBox();
     private Label timesL = new Label("Number of times : ");
-    private TextField timesTF = new TextField();
+    private TextField timesTF = new TextField("300");
 
     private HBox startHB = new HBox();
     private Label startL = new Label();
