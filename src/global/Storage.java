@@ -56,10 +56,17 @@ public class Storage {
     public static final String NOTIFY_GLOBAL_PARENT = "NOTIFY_GLOBAL_PARENT";
     public static final String NOTIFY_PARENT = "NOTIFY_PARENT";
     public static final String NOTIFY_CHILD = "NOTIFY_CHILD";
+    public static final String NOTIFY_ALL = "NOTIFY_ALL";
+
     public static final String FIRST_NODE = "FIRST_NODE";
     public static final String NODE = "NODE";
     public static final String ACCEPT_NODE = "ACCEPT_NODE";
+    public static final String FREE_FIELD = "FREE_FIELD";
+    public static final String ID = "ID";
+    public static final String ID_MAP = "ID_MAP";
 
     public static final String NODE_1 = "1";
     public static final String NODE_2 = "2";
+
+    public static final String CIRCLE_CHECK = "CIRCLE_CHECK";
 }

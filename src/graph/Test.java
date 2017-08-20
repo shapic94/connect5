@@ -1,6 +1,7 @@
 package graph;
 
 import global.Methods;
+import servent.ServentListener;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,22 +31,30 @@ public class Test {
 //        for (int i = 0; i < test.length; i++) {
 //            System.out.println(test[i]);
 //        }
-        String test = "0.1.1.0.0.0.0.0";
-        System.out.println(numberOfChildren(test));
+//        String test = "0.0.0.0.0.0.0";
+//        System.out.println(numberOfChildren(test));
 
-    }
-
-    public static int numberOfChildren(String id) {
-        int count = 0;
-        String[] parseValue = id.split("\\.");
-        for (int i = parseValue.length - 1; i >= 0; i--) {
-            if (parseValue[i].equals("0")) {
-                count++;
-                continue;
-            } else {
-                break;
-            }
+        System.out.println(ServentListener.isPortInUse(1234));
+        if (ServentListener.isPortInUse(1234)) {
+            System.out.println("true");
+        } else {
+            System.out.println("false");
         }
-        return (int) Math.pow(3, Math.floor(count / 2.0));
+//       System.out.println(ServentListener.isPortInUse(1234));
+
     }
+//
+//    public static int numberOfChildren(String id) {
+//        int count = 0;
+//        String[] parseValue = id.split("\\.");
+//        for (int i = parseValue.length - 1; i >= 0; i--) {
+//            if (parseValue[i].equals("0")) {
+//                count++;
+//                continue;
+//            } else {
+//                break;
+//            }
+//        }
+//        return (int) Math.pow(3, Math.floor(count / 2.0));
+//    }
 }

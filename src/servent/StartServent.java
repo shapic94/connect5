@@ -25,7 +25,15 @@ public class StartServent {
 			int myPort = Integer.parseInt(prop.getProperty("myport"));
 
 			// Ovaj broj menjas svaki put kada pokreces novi servent(Znaci promenis, sejvujes i pokrenes)
-			myPort += 4;
+//			myPort += 1; // 8126
+			while (true) {
+				if (ServentListener.isPortInUse(myPort)) {
+					break;
+				}
+				myPort += 1;
+			}
+
+
 			ServentListener.LISTENER_PORT = myPort;
 			ServentListener listener = new ServentListener();
 

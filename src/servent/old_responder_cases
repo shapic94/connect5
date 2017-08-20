@@ -1,0 +1,319 @@
+
+
+		// Split line
+//		String[] message = line.split(" ");
+//		String key = message[0];
+//		String nodeAddress = message[1];
+
+//			case "FIRST":
+//				System.out.println("Bootstrap kaze da sam prvi čvor");
+//
+//				// Parse string
+////					ip = nodeAddress.split(":");
+////					address = ip[0];
+////					port = Integer.parseInt(ip[1]);
+//
+//				// Set Local Level
+////					wrap = "0," + address + "," + port;
+//				map = new HashMap<Integer, String>();
+//				map.put(0, "0," + this.clientSocket.getInetAddress().getHostAddress() + "," + this.clientSocket.getPort());
+//				System.out.println(map.get(0));
+//				ServentSingleton.getInstance().setList(map);
+//
+//				// Set Triangle Level
+//				GraphSingleton.getInstance().addVertex("0");
+//				System.out.println(GraphSingleton.getInstance());
+//
+//				// Start game if info is here
+//				if (message.length == 3) {
+//					parseValue = message[2].split(",");
+//					Object[] object = new Operations().init(parseValue[0], parseValue[1], Integer.parseInt(parseValue[2]), Integer.parseInt(parseValue[3]), Integer.parseInt(parseValue[4]), Integer.parseInt(parseValue[5]));
+//				}
+//				break;
+//				case "NOT_FIRST":
+//					// U ovom delu, CVOR koji se javio bootstrapu, dobija informaciju kome treba da se javi
+//					System.out.println("Bootstrap kaze da se javim " + nodeAddress);
+//
+//					ip = nodeAddress.split(":");
+//					address = ip[0];
+//					port = Integer.parseInt(ip[1]);
+//
+//					serventSocket = new Socket(address, port);
+//					SocketUtils.writeLine(serventSocket, Storage.NEW_INFO + " " + serventSocket.getInetAddress().getHostAddress() + ":" + ServentListener.LISTENER_PORT);
+//
+//					// If not first, call rand node
+//					// TODO: 8/13/17
+//
+//					break;
+//				case "GUI_INFO":
+//
+//					//
+//					String[] GUI_INFO_localAddress;
+//					String GUI_INFO_ip = "";
+//					String GUI_INFO_port = "";
+//
+//					// Get current nodeId
+//					nodeId = Methods.parseLocalLevel(ServentSingleton.getInstance().getList().get(0))[0];
+//
+//					// Ako se javio parentu
+//					if (Methods.isParentVertex(nodeId)) {
+//						// Start game if info is here
+//						if (message.length == 3) {
+//							parseValue = message[2].split(",");
+//
+//							Object[] object = new Operations().init(
+//								parseValue[0],
+//								parseValue[1],
+//								Integer.parseInt(parseValue[2]),
+//								Integer.parseInt(parseValue[3]),
+//								Integer.parseInt(parseValue[4]),
+//								(Integer.parseInt(parseValue[5]) / ServentSingleton.getInstance().getList().size())
+//							);
+//
+//							GUI_INFO_localAddress = Methods.parseHashMapOriginal(ServentSingleton.getInstance().getList().toString());
+//							for (int i = 0; i < ServentSingleton.getInstance().getList().size(); i++) {
+//								String[] parseHashMapLocalAgain = GUI_INFO_localAddress[i].split("=");
+//								String[] parseHashMapLocalAgain1;
+//								parseHashMapLocalAgain1 = parseHashMapLocalAgain[1].split(",");
+//
+//								if (!parseHashMapLocalAgain1[0].equals("0")) {
+//									GUI_INFO_ip = parseHashMapLocalAgain1[1];
+//									GUI_INFO_port = parseHashMapLocalAgain1[2];
+//
+//									serventSocket = new Socket(GUI_INFO_ip, Integer.parseInt(GUI_INFO_port));
+//									SocketUtils.writeLine(
+//										serventSocket,
+//										Storage.PLAY + " " +
+//										parseValue[0] + "," +
+//										parseValue[1] + "," +
+//										parseValue[2] + "," +
+//										parseValue[3] + "," +
+//										parseValue[4] + "," +
+//										(Integer.parseInt(parseValue[5]) / ServentSingleton.getInstance().getList().size())
+//									);
+//								}
+//							}
+//						}
+//					} else {
+//						// Ako se nije javio parentu, vrati parenta
+//						// TODO: 8/13/17  DONE
+//
+//						System.out.println("Pozovi parenta za igranje");
+//
+//						GUI_INFO_localAddress = Methods.parseHashMapOriginal(ServentSingleton.getInstance().getList().toString());
+//						for (int i = 0; i < ServentSingleton.getInstance().getList().size(); i++) {
+//							String[] parseHashMapLocalAgain = GUI_INFO_localAddress[i].split("=");
+//							String[] parseHashMapLocalAgain1;
+//							parseHashMapLocalAgain1 = parseHashMapLocalAgain[1].split(",");
+//
+//							if (parseHashMapLocalAgain1[0].equals("0")) {
+//								GUI_INFO_ip = parseHashMapLocalAgain1[1];
+//								GUI_INFO_port = parseHashMapLocalAgain1[2];
+//							}
+//						}
+//
+//						if (message.length == 3) {
+//							parseValue = message[2].split(",");
+//							serventSocket = new Socket(GUI_INFO_ip, Integer.parseInt(GUI_INFO_port));
+//							SocketUtils.writeLine(
+//								serventSocket,
+//								Storage.GUI_INFO + " " +
+//								GUI_INFO_ip + ":" +
+//								GUI_INFO_port + " " +
+//								parseValue[0] + "," +
+//								parseValue[1] + "," +
+//								parseValue[2] + "," +
+//								parseValue[3] + "," +
+//								parseValue[4] + "," +
+//								parseValue[5]
+//							);
+//						}
+//					}
+//
+//					break;
+//				case "NEW_INFO":
+//					// Ovde je neki CVOR obavesten da mu se javio novi cvor, i salje mu informaciju da treba kod njega da se poveze
+//					System.out.println("Javio mi se novi cvor " + nodeAddress);
+//
+//					ip = nodeAddress.split(":");
+//					address = ip[0];
+//					port = Integer.parseInt(ip[1]);
+//
+//					serventSocket = new Socket(address, port);
+//
+//					// Nebojsa
+//
+//					// Get current nodeId
+//					String nodeId = Methods.parseLocalLevel(ServentSingleton.getInstance().getList().get(0))[0];
+//
+//					// Ako se javio parentu
+//					if (Methods.isParentVertex(nodeId)) {
+//
+//						// Ako parent ima prazno mesto za child
+//						// TODO: 8/13/17 DONE
+//						if (Methods.hasEmptyField(Methods.parseVertices(GraphSingleton.getInstance().getVertices().toString()))) {
+//							// -------- CHECK --------
+//							System.out.println("usao1");
+//							// -------- CHECK --------
+//
+//							String emptyField = Methods.getEmptyField(Methods.parseVertices(GraphSingleton.getInstance().getVertices().toString()));
+//
+//							// Set Local Level
+//							wrap = emptyField + "," + address + "," + port;
+//							ServentSingleton.getInstance().updateList(Integer.parseInt(emptyField), wrap);
+//
+//							// Set Triangle Level
+//							GraphSingleton.getInstance().addVertex(emptyField);
+//							GraphSingleton.getInstance().addEdge(nodeId, emptyField);
+//
+//							HashMap<Integer, String> map1 = new HashMap<Integer,String>(ServentSingleton.getInstance().getList());
+//							map1.put(Integer.parseInt(emptyField), ServentSingleton.getInstance().getList().get(0).toString());
+//							map1.put(0, wrap);
+//
+//							SocketUtils.writeLine(serventSocket, Storage.NEW_ACCEPT + " " + map1.toString().replace(" ", "--"));
+//							System.out.println(GraphSingleton.getInstance());
+//						} else if (Methods.hasParent(nodeId)) {
+//							// Ako ima parenta
+//							// TODO: 8/13/17  UZMI PARENT INFO
+//							// -------- CHECK --------
+//							System.out.println("usao2");
+//							// -------- CHECK --------
+//						} else if (Methods.hasParentChild()) {
+//							// Ako ima childa koji je nekome parent
+//							// TODO: 8/14/17
+//							// -------- CHECK --------
+//							System.out.println("usao3");
+//							// -------- CHECK --------
+//						} else {
+//							// Ako nema gde, pravi novi trougao
+//							// TODO: 8/14/17
+//							// -------- CHECK --------
+//							System.out.println("usao4");
+//							// -------- CHECK --------
+//						}
+//					} else {
+//						// Ako se nije javio parentu, vrati parenta
+//						// TODO: 8/13/17  DONE
+//						// -------- CHECK --------
+//						System.out.println("usao5");
+//						// -------- CHECK --------
+//
+//						String ip = "";
+//						String port = "";
+//
+//						System.out.println(ServentSingleton.getInstance().getList().toString());
+//						String[] localAddress = Methods.parseHashMapOriginal(ServentSingleton.getInstance().getList().toString());
+//						for (int i = 0; i < ServentSingleton.getInstance().getList().size(); i++) {
+//							String[] parseHashMapLocalAgain = localAddress[i].split("=");
+//							String[] parseHashMapLocalAgain1;
+//							parseHashMapLocalAgain1 = parseHashMapLocalAgain[1].split(",");
+//
+//							System.out.println(parseHashMapLocalAgain[0] + " " + parseHashMapLocalAgain[1]);
+//							System.out.println(parseHashMapLocalAgain1[0] + " " + parseHashMapLocalAgain1[1] + " " + parseHashMapLocalAgain1[2]);
+//							if (parseHashMapLocalAgain1[0].equals("0")) {
+//								ip = parseHashMapLocalAgain1[1];
+//								port = parseHashMapLocalAgain1[2];
+//							}
+//						}
+//
+//						SocketUtils.writeLine(serventSocket, Storage.NOT_FIRST + " " + ip + ":" + port);
+//						System.out.println(GraphSingleton.getInstance());
+//					}
+//
+//					break;
+//				case "NEW_ACCEPT":
+//					// Ovde je cvor obavesten da moze da se poveze
+//					System.out.println("NEW_ACCPET");
+//
+//					boolean callSocket = false;
+//					HashMap<Integer, String> map1 = new HashMap<Integer,String>(ServentSingleton.getInstance().getList());
+//					String currentVertex = "";
+//
+//					String[] parseHashMapLocal = Methods.parseHashMap(nodeAddress);
+//					for (int i = 0; i < parseHashMapLocal.length; i++ ) {
+//						String[] parseHashMapLocalAgain = parseHashMapLocal[i].split("=");
+//						ServentSingleton.getInstance().getList().put(Integer.parseInt(parseHashMapLocalAgain[0]), parseHashMapLocalAgain[1]);
+//
+//						String[] parseHashMapLocalAgain1;
+//						parseHashMapLocalAgain1 = parseHashMapLocalAgain[1].split(",");
+//
+//						// Set Triangle Level
+//						GraphSingleton.getInstance().addVertex(parseHashMapLocalAgain1[0]);
+//
+//						// Ako nije trenutni
+//						if (!parseHashMapLocalAgain[0].equals("0")) {
+//							GraphSingleton.getInstance().addEdge(currentVertex, parseHashMapLocalAgain1[0]);
+//
+//							// Ako nije parent
+//							if(!parseHashMapLocalAgain1[0].equals("0")) {
+//								address = parseHashMapLocalAgain1[1];
+//								port = Integer.parseInt(parseHashMapLocalAgain1[2]);
+//
+//								// Set Local Level
+//								String temp = ServentSingleton.getInstance().getList().get(Integer.parseInt(parseHashMapLocalAgain[0])).toString();
+//								map1.put(Integer.parseInt(parseHashMapLocalAgain[0]), ServentSingleton.getInstance().getList().get(0).toString());
+//								map1.put(0, temp);
+//
+//								callSocket = true;
+//							} else {
+//								map1.put(Integer.parseInt(parseHashMapLocalAgain[0]), parseHashMapLocalAgain[1]);
+//							}
+//						} else {
+//							currentVertex = parseHashMapLocalAgain1[0];
+//						}
+//
+//
+//					}
+//
+//					if(callSocket) {
+//						// Ako sam drugi child, obavesti prvog
+//						serventSocket = new Socket(address, port);
+//						SocketUtils.writeLine(serventSocket, Storage.NEW_ARRIVED + " " + map1.toString().replace(" ", "--"));
+//					}
+//
+//					System.out.println(ServentSingleton.getInstance().getList().toString());
+//					System.out.println(GraphSingleton.getInstance());
+//					break;
+//				case "NEW_ARRIVED":
+//					System.out.println("NEW_ARRIVED");
+//					System.out.println(nodeAddress);
+//
+//					String[] parseHashMapLocalArrived = Methods.parseHashMap(nodeAddress);
+//					String currentVertex1 = "";
+//					HashMap<Integer, String> map2 = new HashMap<Integer,String>(ServentSingleton.getInstance().getList());
+//					for (int i = 0; i < parseHashMapLocalArrived.length; i++ ) {
+//						String[] parseHashMapLocalAgain = parseHashMapLocalArrived[i].split("=");
+//						ServentSingleton.getInstance().getList().put(Integer.parseInt(parseHashMapLocalAgain[0]), parseHashMapLocalAgain[1]);
+//
+//						String[] parseHashMapLocalAgain1;
+//						parseHashMapLocalAgain1 = parseHashMapLocalAgain[1].split(",");
+//
+//						// Set Triangle Level
+//						GraphSingleton.getInstance().addVertex(parseHashMapLocalAgain1[0]);
+//
+//						// Ako nije trenutni
+//						if (!parseHashMapLocalAgain[0].equals("0")) {
+//							GraphSingleton.getInstance().addEdge(currentVertex1, parseHashMapLocalAgain1[0]);
+//						} else {
+//							currentVertex1 = parseHashMapLocalAgain1[0];
+//						}
+//					}
+//
+//					System.out.println(ServentSingleton.getInstance().getList().toString());
+//					System.out.println(GraphSingleton.getInstance());
+//					break;
+//				case "PLAY":
+//					// Node address is now game info for playing
+//
+//					parseValue = message[1].split(",");
+//
+//					System.out.println(parseValue[5]);
+//					Object[] object = new Operations().init(
+//						parseValue[0],
+//						parseValue[1],
+//						Integer.parseInt(parseValue[2]),
+//						Integer.parseInt(parseValue[3]),
+//						Integer.parseInt(parseValue[4]),
+//						Integer.parseInt(parseValue[5])
+//					);
+//					break;

@@ -1,6 +1,7 @@
 package bootstrap;
 
 import global.Storage;
+import servent.Servent;
 import servent.ServentListener;
 import servent.SocketUtils;
 
@@ -114,9 +115,37 @@ public class BootstrapServerThread implements Runnable {
 									BufferedWriter w = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
 
 									// Random addres from nodes
-									rand = new Random();
-									randNodeAddress = nodes.get(rand.nextInt(nodes.size()));
+									while (true) {
+										rand = new Random();
+										int randomNode = rand.nextInt(nodes.size());
+										randNodeAddress = nodes.get(randomNode); // nodePort = 8126; random =  8125
 
+										// If new node equal port from vector
+										if (String.valueOf(nodePort).equals(randNodeAddress.split(":")[1])) {
+											nodes.remove(randNodeAddress);
+
+											continue;
+										}
+
+										// If random node port is down
+										if (ServentListener.isPortInUse(Integer.parseInt(randNodeAddress.split(":")[1]))) {
+											nodes.remove(randNodeAddress);
+											continue;
+										}
+
+										break;
+
+
+//										if (String.valueOf(nodePort).equals(randNodeAddress.split(":")[1]) || ServentListener.isPortInUse(Integer.parseInt(randNodeAddress.split(":")[1]))) { // 8126 => true => false
+//											System.out.println(randNodeAddress);
+//											System.out.println(randomNode);
+//											nodes.remove(randomNode);
+//										} else {
+//											System.out.println(randNodeAddress);
+//											System.out.println(randomNode);
+//											break;
+//										}
+									}
 									// if game started send GUI_INFO
 									if (isStarted()) {
 										randNodeAddress += " " + getPlayer1() + "," +
@@ -137,7 +166,9 @@ public class BootstrapServerThread implements Runnable {
 									System.out.println("SEND: " + Storage.NOT_FIRST + " " + randNodeAddress);
 
 									// Save info
-									nodes.add(sock.getInetAddress().getHostAddress() + ":" + Integer.toString(nodePort));
+									if (!nodes.contains(sock.getInetAddress().getHostAddress() + ":" + Integer.toString(nodePort))) {
+										nodes.add(sock.getInetAddress().getHostAddress() + ":" + Integer.toString(nodePort));
+									}
 
 									// Close
 									w.flush();
@@ -149,6 +180,8 @@ public class BootstrapServerThread implements Runnable {
 							} else {
 								System.out.println("Losa kljucna rec za slanje serveru.");
 							}
+
+							System.out.println("--------------------------------------------------");
 
 							// Close
 							reader.close();

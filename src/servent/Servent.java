@@ -8,6 +8,7 @@ public class Servent {
     String id = null;
     int emptyLocalChild;
     int emptyGlobalChild;
+    int fractalDegree;
 
     public Servent() {
 
@@ -47,5 +48,13 @@ public class Servent {
 
     public void setEmptyGlobalChild(int emptyGlobalChild) {
         this.emptyGlobalChild = emptyGlobalChild;
+    }
+
+    public int getFractalDegree() {
+        return fractalDegree;
+    }
+
+    public void setFractalDegree(int fractalDegree) {
+        this.fractalDegree = fractalDegree;
     }
 }
