@@ -95,13 +95,14 @@ public class Responder implements Runnable{
 								// If has empty local child
 								if (ServentSingleton.getInstance().getEmptyLocalChild() > 0) {
 
+									String parsedId = ServentSingleton.getInstance().getId().substring(0, ServentSingleton.getInstance().getId().length() - 1);
 									String emptyChildId = Methods.getEmptyChildId(ServentSingleton.getInstance().getList());
 
 									// Set Servant emptyLocalChild
 									ServentSingleton.getInstance().setEmptyLocalChild(ServentSingleton.getInstance().getEmptyLocalChild() - 1);
 
 									// Set Servant hashMap
-									ServentSingleton.getInstance().updateList(emptyChildId, ip + ":" + port);
+									ServentSingleton.getInstance().updateList(parsedId + emptyChildId, ip + ":" + port);
 
 									// Create socket
 									try {
@@ -118,13 +119,14 @@ public class Responder implements Runnable{
 										socket.getInetAddress().getHostAddress() + ":" +
 										ServentListener.LISTENER_PORT + " " +
 										ServentSingleton.getInstance().getList().toString().replace(" ", "--") + " " +
-										emptyChildId
+												parsedId + emptyChildId
 									);
 
 									// Notify child
-									if (ServentSingleton.getInstance().getList().containsKey("1") && emptyChildId != "1") {
+									if (ServentSingleton.getInstance().getList().containsKey(parsedId + Storage.NODE_1) && emptyChildId != Storage.NODE_1) {
+//									if (ServentSingleton.getInstance().getList().containsKey("1") && emptyChildId != "1") {
 
-										String[] addressChild = ServentSingleton.getInstance().getList().get("1").split(":");
+										String[] addressChild = ServentSingleton.getInstance().getList().get(parsedId + Storage.NODE_1).split(":");
 
 										try {
 											socket = new Socket(addressChild[0], Integer.parseInt(addressChild[1]));
@@ -140,9 +142,9 @@ public class Responder implements Runnable{
 											ServentListener.LISTENER_PORT + " " +
 											ServentSingleton.getInstance().getList().toString().replace(" ", "--")
 										);
-									} else if (ServentSingleton.getInstance().getList().containsKey("2") && emptyChildId != "2") {
+									} else if (ServentSingleton.getInstance().getList().containsKey(parsedId + Storage.NODE_2) && emptyChildId != Storage.NODE_2) {
 
-										String[] addressChild = ServentSingleton.getInstance().getList().get("2").split(":");
+										String[] addressChild = ServentSingleton.getInstance().getList().get(parsedId + Storage.NODE_2).split(":");
 
 										try {
 											socket = new Socket(addressChild[0], Integer.parseInt(addressChild[1]));
@@ -403,7 +405,7 @@ public class Responder implements Runnable{
 								ServentSingleton.getInstance().setEmptyLocalChild(ServentSingleton.getInstance().getEmptyLocalChild() - 1);
 
 								// Set Servant hashMap
-								ServentSingleton.getInstance().updateList(ServentSingleton.getInstance().getId().substring(0, ServentSingleton.getInstance().getId().length() - 1) + emptyChildId, ip + ":" + port);
+								ServentSingleton.getInstance().updateList(parsedId + emptyChildId, ip + ":" + port);
 
 								// Create socket
 								try {
@@ -453,14 +455,14 @@ public class Responder implements Runnable{
 									}
 
 									SocketUtils.writeLine(
-										socket,
-										Storage.NOTIFY_CHILD + " " +
-										Storage.ACCEPT_NODE + " " +
-										socket.getInetAddress().getHostAddress() + ":" +
-										ServentListener.LISTENER_PORT + " " +
-										ServentSingleton.getInstance().getList().toString().replace(" ", "--")
+											socket,
+											Storage.NOTIFY_CHILD + " " +
+													Storage.ACCEPT_NODE + " " +
+													socket.getInetAddress().getHostAddress() + ":" +
+													ServentListener.LISTENER_PORT + " " +
+													ServentSingleton.getInstance().getList().toString().replace(" ", "--")
 									);
-								} else
+								}
 
 								// Show id
 								System.out.println("Id : " + ServentSingleton.getInstance().getId());
@@ -646,27 +648,84 @@ public class Responder implements Runnable{
 
 						break;
 					case "ACCEPT_NODE":
-						String map = message[3];
+						String id = null;
 
-						String id = message[4];
+						// Update his parent with node parent ip:port
+						if (message.length == 4) {
+							id = message[3];
 
-						// Set Servant
-						ServentSingleton.getInstance().setEmptyLocalChild(2);
-						ServentSingleton.getInstance().setId(id);
-						ServentSingleton.getInstance().setList(Methods.createHashMap(Methods.parseHashMap(map)));
-						ServentSingleton.getInstance().updateList(id, ip + ":" + ServentListener.LISTENER_PORT);
+							// Set Servant
+							ServentSingleton.getInstance().updateList(id, ip + ":" + port);
 
-						// CIRCLE CHECK
-						try {
-							socket = new Socket(ip, ServentListener.LISTENER_PORT);
-						} catch (IOException e) {
-							e.printStackTrace();
+							String node1IdA = Methods.getNode1(ServentSingleton.getInstance().getList());
+							String node2IdA = Methods.getNode2(ServentSingleton.getInstance().getList());
+
+							if (node1IdA != null) {
+//								System.out.println("node 1");
+								String[] node1Address = ServentSingleton.getInstance().getList().get(node1IdA).split(":");
+
+								if (!ServentListener.isPortInUse(Integer.parseInt(node1Address[1]))) {
+									try {
+										socket = new Socket(node1Address[0], Integer.parseInt(node1Address[1]));
+									} catch (IOException e) {
+										e.printStackTrace();
+									}
+
+									SocketUtils.writeLine(
+											socket,
+											Storage.NOTIFY_CHILD + " " +
+													Storage.ACCEPT_NODE + " " +
+													socket.getInetAddress().getHostAddress() + ":" +
+													ServentListener.LISTENER_PORT + " " +
+													ServentSingleton.getInstance().getList().toString().replace(" ", "--")
+									);
+								}
+							}
+
+							if (node2IdA != null) {
+//								System.out.println("node 2");
+								String[] node2Address = ServentSingleton.getInstance().getList().get(node2IdA).split(":");
+
+								if (!ServentListener.isPortInUse(Integer.parseInt(node2Address[1]))) {
+									try {
+										socket = new Socket(node2Address[0], Integer.parseInt(node2Address[1]));
+									} catch (IOException e) {
+										e.printStackTrace();
+									}
+
+									SocketUtils.writeLine(
+											socket,
+											Storage.NOTIFY_CHILD + " " +
+													Storage.ACCEPT_NODE + " " +
+													socket.getInetAddress().getHostAddress() + ":" +
+													ServentListener.LISTENER_PORT + " " +
+													ServentSingleton.getInstance().getList().toString().replace(" ", "--")
+									);
+								}
+							}
+						} else {
+							// create new parent
+							String map = message[3];
+							id = message[4];
+
+							// Set Servant
+							ServentSingleton.getInstance().setEmptyLocalChild(2);
+							ServentSingleton.getInstance().setId(id);
+							ServentSingleton.getInstance().setList(Methods.createHashMap(Methods.parseHashMap(map)));
+							ServentSingleton.getInstance().updateList(id, ip + ":" + ServentListener.LISTENER_PORT);
+
+							// CIRCLE CHECK
+							try {
+								socket = new Socket(ip, ServentListener.LISTENER_PORT);
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+
+							SocketUtils.writeLine(
+									socket,
+									Storage.CIRCLE_CHECK + " test 123123:3123"
+							);
 						}
-
-						SocketUtils.writeLine(
-								socket,
-								Storage.CIRCLE_CHECK + " test 123123:3123"
-						);
 
 						// Show id
 						System.out.println("Id : " + ServentSingleton.getInstance().getId());
@@ -680,24 +739,22 @@ public class Responder implements Runnable{
 						String childParentId = message[3];
 						String childParentFreeFields = message[4];
 
+
 						// if contains number of freeParent
 						if (ServentSingleton.getInstance().getList().containsKey(childParentId)) {
-							System.out.println(childParentId);
+
 							if (ServentSingleton.getInstance().getList().get(childParentId).contains(" ")) {
 								String[] childParentInMap = ServentSingleton.getInstance().getList().get(childParentId).split(" "); // ip:port 4
 								String[] parseChildParentInMap = childParentInMap[0].split(":");
 								ServentSingleton.getInstance().updateList(childParentId, parseChildParentInMap[0] + ":" + port + " " + (Integer.parseInt(childParentInMap[1]) + Integer.parseInt(childParentFreeFields)));
-							} else {
-								System.out.println(ServentSingleton.getInstance().getList());
 							}
 
 							String node1Id = Methods.getNode1(ServentSingleton.getInstance().getList());
 							String node2Id = Methods.getNode2(ServentSingleton.getInstance().getList());
 
-							System.out.println(node1Id);
-							System.out.println(node2Id);
+
 							if (node1Id != null) {
-								System.out.println("node 1");
+//								System.out.println("node 1");
 								String[] node1Address = ServentSingleton.getInstance().getList().get(node1Id).split(":");
 
 								if (!ServentListener.isPortInUse(Integer.parseInt(node1Address[1]))) {
@@ -719,7 +776,7 @@ public class Responder implements Runnable{
 							}
 
 							if (node2Id != null) {
-								System.out.println("node 2");
+//								System.out.println("node 2");
 								String[] node2Address = ServentSingleton.getInstance().getList().get(node2Id).split(":");
 
 								if (!ServentListener.isPortInUse(Integer.parseInt(node2Address[1]))) {
@@ -740,37 +797,37 @@ public class Responder implements Runnable{
 								}
 							}
 
-							System.out.println(ServentSingleton.getInstance().getList());
 							// Notify all other parents
-							Iterator it = ServentSingleton.getInstance().getList().entrySet().iterator();
-							while (it.hasNext()) {
-								Map.Entry pair = (Map.Entry) it.next();
+							if (ServentSingleton.getInstance().getId().equals(childParentId)) {
+								Iterator it = ServentSingleton.getInstance().getList().entrySet().iterator();
+								while (it.hasNext()) {
+									Map.Entry pair = (Map.Entry) it.next();
 
-								if (Methods.isLocalParent(pair.getKey().toString()) && !Methods.isGlobalParent(pair.getKey().toString()) && !pair.getKey().toString().equals(ServentSingleton.getInstance().getId())) {
-									String[] otherLocalParentAddress;
-									if (pair.getValue().toString().contains(" ")) {
-										otherLocalParentAddress = pair.getValue().toString().split(" ");
-										otherLocalParentAddress = otherLocalParentAddress[0].split(":");
-									} else {
-										otherLocalParentAddress = pair.getValue().toString().split(":");
-									}
-
-									if (!ServentListener.isPortInUse(Integer.parseInt(otherLocalParentAddress[1]))) {
-										try {
-											socket = new Socket(otherLocalParentAddress[0], Integer.parseInt(otherLocalParentAddress[1]));
-										} catch (IOException e) {
-											e.printStackTrace();
+									if (Methods.isLocalParent(pair.getKey().toString()) && !Methods.isGlobalParent(pair.getKey().toString()) && !pair.getKey().toString().equals(ServentSingleton.getInstance().getId())) {
+										String[] otherLocalParentAddress;
+										if (pair.getValue().toString().contains(" ")) {
+											otherLocalParentAddress = pair.getValue().toString().split(" ");
+											otherLocalParentAddress = otherLocalParentAddress[0].split(":");
+										} else {
+											otherLocalParentAddress = pair.getValue().toString().split(":");
 										}
 
-										SocketUtils.writeLine(
-												socket,
-												Storage.NOTIFY_PARENT + " " +
-														Storage.ACCEPT_NODE + " " +
-														socket.getInetAddress().getHostAddress() + ":" +
-														ServentListener.LISTENER_PORT + " " +
-														ServentSingleton.getInstance().getList().toString().replace(" ", "--") + " " +
-														pair.getKey().toString()
-										);
+										if (!ServentListener.isPortInUse(Integer.parseInt(otherLocalParentAddress[1]))) {
+											try {
+												socket = new Socket(otherLocalParentAddress[0], Integer.parseInt(otherLocalParentAddress[1]));
+											} catch (IOException e) {
+												e.printStackTrace();
+											}
+
+											SocketUtils.writeLine(
+													socket,
+													Storage.NOTIFY_PARENT + " " +
+															Storage.ACCEPT_NODE + " " +
+															socket.getInetAddress().getHostAddress() + ":" +
+															ServentListener.LISTENER_PORT + " " +
+															childParentId
+											);
+										}
 									}
 								}
 							}
@@ -781,8 +838,6 @@ public class Responder implements Runnable{
 								String parentId = Methods.getParent(ServentSingleton.getInstance().getList());
 								String[] addressOfParent = ServentSingleton.getInstance().getList().get(parentId).split(":");
 
-								System.out.println(addressOfParent[0]);
-								System.out.println(addressOfParent[1]);
 								try {
 									socket = new Socket(addressOfParent[0], Integer.parseInt(addressOfParent[1]));
 								} catch (IOException e) {
@@ -965,6 +1020,10 @@ public class Responder implements Runnable{
 
 			case "CIRCLE_CHECK":
 
+				String[] freeFieldAddress = null;
+				String freeFieldId = null;
+				int freeFieldNumber = -1;
+
 				// if it is parent
 				if (Methods.isLocalParent(ServentSingleton.getInstance().getId())) {
 					String node1Id = Methods.getNode1(ServentSingleton.getInstance().getList());
@@ -986,28 +1045,10 @@ public class Responder implements Runnable{
 							ServentSingleton.getInstance().setEmptyLocalChild(2);
 
 							// Notify parent
-							// if it is NOT global parent
-//							if (!Methods.isGlobalParent(ServentSingleton.getInstance().getId())) {
+							freeFieldAddress = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId()).split(":");
+							freeFieldId = ServentSingleton.getInstance().getId();
+							freeFieldNumber = 2;
 
-								String parentId = Methods.getParent(ServentSingleton.getInstance().getList());
-								String[] addressOfParent = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId()).split(":");
-
-								try {
-									socket = new Socket(addressOfParent[0], Integer.parseInt(addressOfParent[1]));
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-
-								SocketUtils.writeLine(
-										socket,
-										Storage.NOTIFY_PARENT + " " +
-												Storage.FREE_FIELD + " " +
-												socket.getInetAddress().getHostAddress() + ":" +
-												ServentListener.LISTENER_PORT + " " +
-												ServentSingleton.getInstance().getId() + " " +
-												2
-								);
-//							}
 						} else {
 							System.out.println("Node : 2 [DEAD]");
 
@@ -1022,28 +1063,9 @@ public class Responder implements Runnable{
 							}
 
 							// Notify parent
-							// if it is NOT global parent
-//							if (!Methods.isGlobalParent(ServentSingleton.getInstance().getId())) {
-								String parentId = Methods.getParent(ServentSingleton.getInstance().getList());
-								String[] addressOfParent = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId()).split(":");
-
-								try {
-									socket = new Socket(addressOfParent[0], Integer.parseInt(addressOfParent[1]));
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-
-								SocketUtils.writeLine(
-										socket,
-										Storage.NOTIFY_PARENT + " " +
-												Storage.FREE_FIELD + " " +
-												socket.getInetAddress().getHostAddress() + ":" +
-												ServentListener.LISTENER_PORT + " " +
-												ServentSingleton.getInstance().getId() + " " +
-												1
-								);
-
-//							}
+							freeFieldAddress = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId()).split(":");
+							freeFieldId = ServentSingleton.getInstance().getId();
+							freeFieldNumber = 1;
 						}
 					} else if(node1Id != null && ServentListener.isPortInUse(Integer.parseInt(ServentSingleton.getInstance().getList().get(node1Id).split(":")[1]))) {
 						// if NODE_1 exist and is NOT alive
@@ -1061,28 +1083,9 @@ public class Responder implements Runnable{
 						}
 
 						// Notify parent
-						// if it is NOT global parent
-//						if (!Methods.isGlobalParent(ServentSingleton.getInstance().getId())) {
-
-							String parentId = Methods.getParent(ServentSingleton.getInstance().getList());
-							String[] addressOfParent = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId()).split(":");
-
-							try {
-								socket = new Socket(addressOfParent[0], Integer.parseInt(addressOfParent[1]));
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-
-							SocketUtils.writeLine(
-									socket,
-									Storage.NOTIFY_PARENT + " " +
-											Storage.FREE_FIELD + " " +
-											socket.getInetAddress().getHostAddress() + ":" +
-											ServentListener.LISTENER_PORT + " " +
-											ServentSingleton.getInstance().getId() + " " +
-											1
-							);
-//						}
+						freeFieldAddress = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId()).split(":");
+						freeFieldId = ServentSingleton.getInstance().getId();
+						freeFieldNumber = 1;
 					}
 				} else if (Methods.isNode1(ServentSingleton.getInstance().getId())) {
 					// If it is NODE_1
@@ -1114,32 +1117,14 @@ public class Responder implements Runnable{
 
 
 							// Notify parent
-							// if it is NOT global parent
-//							if (!Methods.isGlobalParent(ServentSingleton.getInstance().getId())) {
-
-								parentId = Methods.getParent(ServentSingleton.getInstance().getList());
-								String[] addressOfParent = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId()).split(":");
-
-								try {
-									socket = new Socket(addressOfParent[0], Integer.parseInt(addressOfParent[1]));
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-
-								SocketUtils.writeLine(
-										socket,
-										Storage.NOTIFY_PARENT + " " +
-												Storage.FREE_FIELD + " " +
-												socket.getInetAddress().getHostAddress() + ":" +
-												ServentListener.LISTENER_PORT + " " +
-												ServentSingleton.getInstance().getId() + " " +
-												2
-								);
-//							}
+							freeFieldAddress = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId()).split(":");
+							freeFieldId = ServentSingleton.getInstance().getId();
+							freeFieldNumber = 2;
 						} else {
 
 							System.out.println("Parent : [DEAD]");
 							System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
+
 							// Set Servant
 							// Update map
 							ServentSingleton.getInstance().getList().remove(parentId);
@@ -1157,71 +1142,10 @@ public class Responder implements Runnable{
 							ServentSingleton.getInstance().getList().put(ServentSingleton.getInstance().getId(), temp);
 
 							// Notify parent
-							// if it is NOT global parent
-//							if (!Methods.isGlobalParent(ServentSingleton.getInstance().getId())) {
-
-								parentId = Methods.getParent(ServentSingleton.getInstance().getList());
-								String[] addressOfParent = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId()).split(":");
-
-								try {
-									socket = new Socket(addressOfParent[0], Integer.parseInt(addressOfParent[1]));
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-
-								SocketUtils.writeLine(
-										socket,
-										Storage.NOTIFY_PARENT + " " +
-												Storage.FREE_FIELD + " " +
-												socket.getInetAddress().getHostAddress() + ":" +
-												ServentListener.LISTENER_PORT + " " +
-												ServentSingleton.getInstance().getId() + " " +
-												1
-								);
-							System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
-//							}
+							freeFieldAddress = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId()).split(":");
+							freeFieldId = ServentSingleton.getInstance().getId();
+							freeFieldNumber = 1;
 						}
-					} else if(node2Id != null && ServentListener.isPortInUse(Integer.parseInt(ServentSingleton.getInstance().getList().get(node2Id).split(":")[1]))) {
-						// if NODE_2 exist and is NOT alive
-
-						System.out.println("Node : 2 [DEAD]");
-
-						// Set Servant
-						// Update map
-						ServentSingleton.getInstance().getList().remove(node2Id);
-
-						// Notify parent
-						// if it is NOT global parent
-//						if (!Methods.isGlobalParent(ServentSingleton.getInstance().getId())) {
-
-							parentId = ServentSingleton.getInstance().getId().substring(0, ServentSingleton.getInstance().getId().length() - 1) + "0";
-							String[] addressOfParent = ServentSingleton.getInstance().getList().get(parentId).split(":");
-
-							try {
-								socket = new Socket(addressOfParent[0], Integer.parseInt(addressOfParent[1]));
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-
-							SocketUtils.writeLine(
-									socket,
-									Storage.NOTIFY_PARENT + " " +
-											Storage.FREE_FIELD + " " +
-											socket.getInetAddress().getHostAddress() + ":" +
-											ServentListener.LISTENER_PORT + " " +
-											node2Id + " " +
-											1
-
-							);
-//						}
-
-						// Show id
-						System.out.println("Id : " + ServentSingleton.getInstance().getId());
-
-						// Show map
-						System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
-
-						System.out.println("--------------------------------------------------");
 					}
 				} else if (Methods.isNode2(ServentSingleton.getInstance().getId())) {
 					// If it is NODE_2
@@ -1253,80 +1177,21 @@ public class Responder implements Runnable{
 
 
 							// Notify parent
-							// if it is NOT global parent
-//							if (!Methods.isGlobalParent(ServentSingleton.getInstance().getId())) {
-
-								parentId = Methods.getParent(ServentSingleton.getInstance().getList());
-								String[] addressOfParent = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId()).split(":");
-
-								try {
-									socket = new Socket(addressOfParent[0], Integer.parseInt(addressOfParent[1]));
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-
-								SocketUtils.writeLine(
-										socket,
-										Storage.NOTIFY_PARENT + " " +
-												Storage.FREE_FIELD + " " +
-												socket.getInetAddress().getHostAddress() + ":" +
-												ServentListener.LISTENER_PORT + " " +
-												ServentSingleton.getInstance().getId() + " " +
-												2
-								);
-//							}
-
-						} else {
-
-							System.out.println("Node : 1 [DEAD]");
-
-							// Set Servant
-							// Update map
-							ServentSingleton.getInstance().getList().remove(node1Id);
-
-							// Notify parent
-							// if it is NOT global parent
-//							if (!Methods.isGlobalParent(ServentSingleton.getInstance().getId())) {
-
-								parentId = ServentSingleton.getInstance().getId().substring(0, ServentSingleton.getInstance().getId().length() - 1) + "0";
-								String[] addressOfParent = ServentSingleton.getInstance().getList().get(parentId).split(":");
-
-								try {
-									socket = new Socket(addressOfParent[0], Integer.parseInt(addressOfParent[1]));
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-
-								SocketUtils.writeLine(
-										socket,
-										Storage.NOTIFY_PARENT + " " +
-												Storage.FREE_FIELD + " " +
-												socket.getInetAddress().getHostAddress() + ":" +
-												ServentListener.LISTENER_PORT + " " +
-												node1Id + " " +
-												1
-								);
-//							}
-
-							// Show id
-							System.out.println("Id : " + ServentSingleton.getInstance().getId());
-
-							// Show map
-							System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
-
-							System.out.println("--------------------------------------------------");
+							freeFieldAddress = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId()).split(":");
+							freeFieldId = ServentSingleton.getInstance().getId();
+							freeFieldNumber = 2;
 						}
 					} else if(parentId != null && ServentListener.isPortInUse(Integer.parseInt(ServentSingleton.getInstance().getList().get(parentId).split(":")[1]))) {
 
 						// if NODE_2 exist and is NOT alive
 
+						// Set Servant
+						// Update map
+						ServentSingleton.getInstance().getList().remove(parentId);
+
 						if (node1Id == null) {
 
 							System.out.println("Parent : [DEAD]");
-
-							// Set Servant
-							// Update map
-							ServentSingleton.getInstance().getList().remove(parentId);
 
 							if (node1Id != null) {
 								ServentSingleton.getInstance().setEmptyLocalChild(1);
@@ -1342,31 +1207,31 @@ public class Responder implements Runnable{
 							ServentSingleton.getInstance().getList().put(ServentSingleton.getInstance().getId(), temp);
 
 							// Notify parent
-							// if it is NOT global parent
-//							if (!Methods.isGlobalParent(ServentSingleton.getInstance().getId())) {
-
-								parentId = Methods.getParent(ServentSingleton.getInstance().getList());
-								String[] addressOfParent = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId()).split(":");
-
-								try {
-									socket = new Socket(addressOfParent[0], Integer.parseInt(addressOfParent[1]));
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-
-								SocketUtils.writeLine(
-										socket,
-										Storage.NOTIFY_PARENT + " " +
-												Storage.FREE_FIELD + " " +
-												socket.getInetAddress().getHostAddress() + ":" +
-												ServentListener.LISTENER_PORT + " " +
-												ServentSingleton.getInstance().getId() + " " +
-												1
-								);
-//							}
+							freeFieldAddress = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId()).split(":");
+							freeFieldId = ServentSingleton.getInstance().getId();
+							freeFieldNumber = 1;
 						}
 					}
 				}
+
+				if (freeFieldAddress != null && freeFieldId != null && freeFieldNumber != -1) {
+					try {
+						socket = new Socket(freeFieldAddress[0], Integer.parseInt(freeFieldAddress[1]));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+
+					SocketUtils.writeLine(
+							socket,
+							Storage.NOTIFY_PARENT + " " +
+									Storage.FREE_FIELD + " " +
+									socket.getInetAddress().getHostAddress() + ":" +
+									ServentListener.LISTENER_PORT + " " +
+									freeFieldId + " " +
+									freeFieldNumber
+					);
+				}
+
 
 				try {
 					Thread.sleep(2000);
