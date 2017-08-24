@@ -4,6 +4,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.text.Font;
+
+import java.awt.*;
 
 public class Component {
 
@@ -291,4 +294,6 @@ public class Component {
     public void setStartL(Label startL) {
         this.startL = startL;
     }
+
+
 }
