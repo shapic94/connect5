@@ -1,12 +1,11 @@
 package servent;
-import storage.Storage;
+import global.Storage;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Properties;
-import java.util.Scanner;
 
 public class StartServent {
 	private int sPort;
@@ -26,7 +25,15 @@ public class StartServent {
 			int myPort = Integer.parseInt(prop.getProperty("myport"));
 
 			// Ovaj broj menjas svaki put kada pokreces novi servent(Znaci promenis, sejvujes i pokrenes)
-			myPort += 4;
+//			myPort += 1; // 8126
+			while (true) {
+				if (ServentListener.isPortInUse(myPort)) {
+					break;
+				}
+				myPort += 1;
+			}
+
+
 			ServentListener.LISTENER_PORT = myPort;
 			ServentListener listener = new ServentListener();
 
@@ -45,11 +52,10 @@ public class StartServent {
 					//portCvora = scan.nextInt();
 					if(novi==1) {
 						Socket s = new Socket(Storage.BOOTSTRAP_IP, Storage.BOOTSTRAP_PORT);
-						SocketUtils.writeLine(s, Storage.NEW + " " + myPort);
+						SocketUtils.writeLine(s, Storage.NEW + " " + s.getInetAddress().getHostAddress() + ":" + myPort);
 						System.out.println(Storage.NEW + " " + myPort);
 						novi = 0;
 					}
-
 				}
 			}
 		} catch (FileNotFoundException e) {

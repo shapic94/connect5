@@ -16,7 +16,6 @@ public class Graph {
         myAdjList = new HashMap<Vertex, TreeSet<Vertex>>();
         myVertices = new HashMap<String, Vertex>();
         myNumVertices = myNumEdges = 0;
-
     }
 
     /**

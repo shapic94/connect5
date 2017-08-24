@@ -2,6 +2,7 @@ package servent;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 
 public class ServentListener implements Runnable {
 
@@ -33,6 +34,20 @@ public class ServentListener implements Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
 
+	public static boolean isPortInUse(int port) {
+		// Assume no connection is possible.
+		boolean result = false;
+
+		try {
+			(new ServerSocket(port)).close();
+			result = true;
+		}
+		catch(IOException e) {
+			// Could not connect.
+		}
+
+		return result;
 	}
 }

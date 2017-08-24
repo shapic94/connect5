@@ -2,7 +2,7 @@ package connect5;
 
 import entity.Token;
 import gui.Component;
-import storage.Storage;
+import global.Storage;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -66,8 +66,8 @@ public class Operations implements OperationsAbstract {
         for (int i = 0; i < algorithm.getTimes(); i++) {
 
             // Start test
-            System.out.println("[Operations][test()] Testing...");
-            Component.getInstance().getResultL().setText("Testing...");
+//            System.out.println("[Operations][test()] Testing...");
+//            Component.getInstance().getResultL().setText("Testing...");
 
             for (int j = 0; j < algorithm.getTokens(); j++) {
                 random = ThreadLocalRandom.current().nextInt(0, algorithm.getCol());
@@ -92,41 +92,41 @@ public class Operations implements OperationsAbstract {
             }
 
             // Show tested game
-            System.out.println("[Operations][test()] Tested Game");
+//            System.out.println("[Operations][test()] Tested Game");
 
             // Play game
-            System.out.println("[Operations][test()] Play game");
+//            System.out.println("[Operations][test()] Play game");
             algorithm.play(algorithm, black, white);
-            algorithm.show(algorithm);
+//            algorithm.show(algorithm);
 
             // Winner
             if (black.isWinner()) {
-                System.out.println("[Operations][test()] Cestitamo, " + black.getName() + ", Row: " + algorithm.getRowWinner() + ", Column: " + algorithm.getColWinner());
+//                System.out.println("[Operations][test()] Cestitamo, " + black.getName() + ", Row: " + algorithm.getRowWinner() + ", Column: " + algorithm.getColWinner());
             } else if (white.isWinner()) {
-                System.out.println("[Operations][test()] Cestitamo, " + white.getName() + ", Row: " + algorithm.getRowWinner() + ", Column: " + algorithm.getColWinner());
+//                System.out.println("[Operations][test()] Cestitamo, " + white.getName() + ", Row: " + algorithm.getRowWinner() + ", Column: " + algorithm.getColWinner());
             }
 
             reset(algorithm, black, white);
         }
 
         // Global winner
-        System.out.println(black.getNumberOfWins());
-        System.out.println(white.getNumberOfWins());
+        System.out.println(black.getName() + " : " + black.getNumberOfWins());
+        System.out.println(white.getName() + " : " + white.getNumberOfWins());
         System.out.println("---------------------------------------------------------------------------------");
 
         // Set Names, number of wins and percent
-        Component.getInstance().getPlayer1NameL().setText(black.getName());
-        Component.getInstance().getPlayer1ScoreL().setText(black.getNumberOfWins() + " pobeda ( " + ((100 * black.getNumberOfWins()) / algorithm.getTimes()) + "% )");
-        Component.getInstance().getPlayer2NameL().setText(white.getName());
-        Component.getInstance().getPlayer2ScoreL().setText(white.getNumberOfWins() + " pobeda ( " + ((100 * white.getNumberOfWins()) / algorithm.getTimes()) + "% )");
+//        Component.getInstance().getPlayer1NameL().setText(black.getName());
+//        Component.getInstance().getPlayer1ScoreL().setText(black.getNumberOfWins() + " pobeda ( " + ((100 * black.getNumberOfWins()) / algorithm.getTimes()) + "% )");
+//        Component.getInstance().getPlayer2NameL().setText(white.getName());
+//        Component.getInstance().getPlayer2ScoreL().setText(white.getNumberOfWins() + " pobeda ( " + ((100 * white.getNumberOfWins()) / algorithm.getTimes()) + "% )");
 
-        if (black.getNumberOfWins() == white.getNumberOfWins()) {
-            Component.getInstance().getResultL().setText("Ovo je neverovatno! Imate isti broj pobeda!");
-        } else if (black.getNumberOfWins() > white.getNumberOfWins()) {
-            Component.getInstance().getResultL().setText("Cestitamo, " + black.getName() + ", imate " + (black.getNumberOfWins() - white.getNumberOfWins()) + " pobeda vise i " + (((100 * black.getNumberOfWins()) / algorithm.getTimes()) - ((100 * white.getNumberOfWins()) / algorithm.getTimes())) + "% sanse vise");
-        } else if (black.getNumberOfWins() < white.getNumberOfWins()) {
-            Component.getInstance().getResultL().setText("Cestitamo, " + white.getName() + ", imate " + (white.getNumberOfWins() - black.getNumberOfWins()) + " pobeda vise i " + (((100 * white.getNumberOfWins()) / algorithm.getTimes()) - ((100 * black.getNumberOfWins()) / algorithm.getTimes())) + "% sanse vise");
-        }
+//        if (black.getNumberOfWins() == white.getNumberOfWins()) {
+//            Component.getInstance().getResultL().setText("Ovo je neverovatno! Imate isti broj pobeda!");
+//        } else if (black.getNumberOfWins() > white.getNumberOfWins()) {
+//            Component.getInstance().getResultL().setText("Cestitamo, " + black.getName() + ", imate " + (black.getNumberOfWins() - white.getNumberOfWins()) + " pobeda vise i " + (((100 * black.getNumberOfWins()) / algorithm.getTimes()) - ((100 * white.getNumberOfWins()) / algorithm.getTimes())) + "% sanse vise");
+//        } else if (black.getNumberOfWins() < white.getNumberOfWins()) {
+//            Component.getInstance().getResultL().setText("Cestitamo, " + white.getName() + ", imate " + (white.getNumberOfWins() - black.getNumberOfWins()) + " pobeda vise i " + (((100 * white.getNumberOfWins()) / algorithm.getTimes()) - ((100 * black.getNumberOfWins()) / algorithm.getTimes())) + "% sanse vise");
+//        }
     }
 
     @Override
@@ -145,7 +145,7 @@ public class Operations implements OperationsAbstract {
         turn(algorithm, black, white);
 
         //
-        Component.getInstance().getResultL().setText("Playing...");
+//        Component.getInstance().getResultL().setText("Playing...");
 
         while(true) {
             // Check if table is full
@@ -179,11 +179,11 @@ public class Operations implements OperationsAbstract {
     public int add(Algorithm algorithm, Token black, Token white) {
         while (true) {
             if (checkFullGame(algorithm)) {
-                System.out.println("[Operations][add()] Popunjeno");
+//                System.out.println("[Operations][add()] Popunjeno");
 
                 // Check if there is no winner
                 if (!black.isWinner() && !white.isWinner()) {
-                    System.out.println("[Operations][add()] Nema pobednika");
+//                    System.out.println("[Operations][add()] Nema pobednika");
                 }
                 return Storage.ADD_FULL;
             }
@@ -321,7 +321,7 @@ public class Operations implements OperationsAbstract {
                                 connects++;
 
                                 if (connects == 5) {
-                                    System.out.println("[Operations][check()] Horizontalno");
+//                                    System.out.println("[Operations][check()] Horizontalno");
                                     return true;
                                 }
                             } else {
@@ -349,7 +349,7 @@ public class Operations implements OperationsAbstract {
                                 connects++;
 
                                 if (connects == 5) {
-                                    System.out.println("[Operations][check()] Horizontalno");
+//                                    System.out.println("[Operations][check()] Horizontalno");
                                     return true;
                                 }
                             } else {
@@ -385,7 +385,7 @@ public class Operations implements OperationsAbstract {
                                 connects++;
 
                                 if (connects == 5) {
-                                    System.out.println("[Operations][check()] Vertikalno");
+//                                    System.out.println("[Operations][check()] Vertikalno");
                                     return true;
                                 }
                             } else {
@@ -413,7 +413,7 @@ public class Operations implements OperationsAbstract {
                                 connects++;
 
                                 if (connects == 5) {
-                                    System.out.println("[Operations][check()] Vertikalno");
+//                                    System.out.println("[Operations][check()] Vertikalno");
                                     return true;
                                 }
                             } else {
@@ -450,7 +450,7 @@ public class Operations implements OperationsAbstract {
                                 connects++;
 
                                 if (connects == 5) {
-                                    System.out.println("[Operations][check()] Ukoso levo gore, desno dole");
+//                                    System.out.println("[Operations][check()] Ukoso levo gore, desno dole");
                                     return true;
                                 }
                             } else {
@@ -481,7 +481,7 @@ public class Operations implements OperationsAbstract {
                                 connects++;
 
                                 if (connects == 5) {
-                                    System.out.println("[Operations][check()] Ukoso levo gore, desno dole");
+//                                    System.out.println("[Operations][check()] Ukoso levo gore, desno dole");
                                     return true;
                                 }
                             } else {
@@ -518,7 +518,7 @@ public class Operations implements OperationsAbstract {
                                 connects++;
 
                                 if (connects == 5) {
-                                    System.out.println("[Operations][check()] Ukoso desno gore, levo dole");
+//                                    System.out.println("[Operations][check()] Ukoso desno gore, levo dole");
                                     return true;
                                 }
                             } else {
@@ -549,7 +549,7 @@ public class Operations implements OperationsAbstract {
                                 connects++;
 
                                 if (connects == 5) {
-                                    System.out.println("[Operations][check()] Ukoso desno gore, levo dole");
+//                                    System.out.println("[Operations][check()] Ukoso desno gore, levo dole");
                                     return true;
                                 }
                             } else {
@@ -596,10 +596,10 @@ public class Operations implements OperationsAbstract {
         }
 
         if (black.getFields() < white.getFields()) {
-            System.out.println("[Operations][turn()] Black token has first turn.");
+//            System.out.println("[Operations][turn()] Black token has first turn.");
             black.setTurn(true);
         } else {
-            System.out.println("[Operations][turn()] White token has first turn.");
+//            System.out.println("[Operations][turn()] White token has first turn.");
             white.setTurn(true);
         }
     }

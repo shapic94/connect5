@@ -1,6 +1,7 @@
 package main;
 
 import connect5.Operations;
+import global.Storage;
 import gui.Component;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -18,6 +19,11 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import servent.ServentListener;
+import servent.SocketUtils;
+
+import java.io.IOException;
+import java.net.Socket;
 
 import java.awt.*;
 
@@ -34,6 +40,11 @@ public class Main extends Application {
     private static final Border black = new Border(new BorderStroke(Color.BLACK,
             BorderStrokeStyle.SOLID, new CornerRadii(8), new BorderWidths(2)));
 
+    public static void main(String [] args) {
+          System.out.println("Welcome to connect5 game");
+          launch(args);
+    }
+  
     @Override
     public void start(Stage primaryStage) throws Exception {
 
@@ -193,8 +204,8 @@ public class Main extends Application {
         Component.getInstance().getStartB().setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
+                Socket socket = null;
                 try {
-
                     String player1 = Component.getInstance().getPlayer1TF().getText();
                     String player2 = Component.getInstance().getPlayer2TF().getText();
                     int row = Integer.parseInt(Component.getInstance().getRowTF().getText());
@@ -202,82 +213,32 @@ public class Main extends Application {
                     int tokens = Integer.parseInt(Component.getInstance().getTokensTF().getText());
                     int times = Integer.parseInt(Component.getInstance().getTimesTF().getText());
 
-                    // Initializing
-                    Object[] object = new Operations().init(player1, player2, row, col, tokens, times);
+                    if (!player1.equals("") && !player2.equals("") && row != 0 && col != 0 && tokens != 0 && times != 0) {
+                        socket = new Socket(Storage.BOOTSTRAP_IP, Storage.BOOTSTRAP_PORT);
+
+                        // GUI_INFO ip:port player1,player2,row,col,tokens,times
+                        SocketUtils.writeLine(
+                                socket,
+                                Storage.GUI_INFO + " " +
+                                socket.getInetAddress().getHostAddress() + ":" +
+                                socket.getPort() + " " +
+                                player1 + "," +
+                                player2 + "," +
+                                row + "," +
+                                col + "," +
+                                tokens + "," +
+                                times + ",");
+                    }
+
+//                    // Initializing
+//                    Object[] object = new Operations().init(player1, player2, row, col, tokens, times);
 
                 } catch (NumberFormatException err) {
                     System.out.println("Greska");
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         });
     }
-
-    public static void main(String [] args) {
-        System.out.println("Welcome to connect5 game");
-        launch(args);
-
-//        // Rows
-//        int row = 10;
-//
-//        // Columns
-//        int col = 10;
-//
-//        // Tokens
-//        int tokens = 5;
-//
-//        // Times
-//        int times = 1;
-
-//        JFrame frame = new JFrame("Connect5");
-//        frame.setSize(640, 480);
-//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//
-//        Frame.getInstance().add(Panel.getInstance());
-
-//        Panel.getGroupLayout().setHorizontalGroup(
-//                Panel.getGroupLayout().createSequentialGroup()
-//                .addComponent(Component.getInstance().getRowL())
-//                .addComponent(Component.getInstance().getRowTF())
-//        );
-//        Panel.getGroupLayout().createSequentialGroup().addGroup(
-//                Panel.getGroupLayout().createParallelGroup()
-//                .addComponent(Component.getInstance().getRowL())
-//                .addComponent(Component.getInstance().getRowTF())
-//        );
-//        Panel.getInstance().add(Component.getInstance().getRowL());
-//        Panel.getInstance().add(Component.getInstance().getRowTF());
-//
-//        Panel.getInstance().add(Component.getInstance().getColL());
-//        Panel.getInstance().add(Component.getInstance().getColTF());
-//
-//        Panel.getInstance().add(Component.getInstance().getTokensL());
-//        Panel.getInstance().add(Component.getInstance().getTokensTF());
-//
-//        Panel.getInstance().add(Component.getInstance().getTimesL());
-//        Panel.getInstance().add(Component.getInstance().getTimesTF());
-//
-//        Panel.getInstance().add(Component.getInstance().getStartB());
-//
-//        Panel.getInstance().add(Component.getInstance().getResultL());
-
-//        Component.getInstance().getStartB().addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                try {
-//                    int row = Integer.parseInt(Component.getInstance().getRowTF().getText());
-//                    int col = Integer.parseInt(Component.getInstance().getColTF().getText());
-//                    int tokens = Integer.parseInt(Component.getInstance().getTokensTF().getText());
-//                    int times = Integer.parseInt(Component.getInstance().getTimesTF().getText());
-//
-//
-//                    // Initializing
-//                    Object[] object = new Operations().init(row, col, tokens, times);
-//
-//                } catch (NumberFormatException err) {
-//                    System.out.println("Greska");
-//                }
-//            }
-//        });
-    }
-
 }

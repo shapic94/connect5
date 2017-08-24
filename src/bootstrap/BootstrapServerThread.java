@@ -1,12 +1,11 @@
 package bootstrap;
 
-import graph.GraphSingleton;
-import storage.Storage;
+import global.Storage;
+import servent.Servent;
+import servent.ServentListener;
+import servent.SocketUtils;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.Socket;
 import java.util.Random;
 import java.util.Vector;
@@ -14,8 +13,19 @@ import java.util.Vector;
 public class BootstrapServerThread implements Runnable {
 
 	private Socket sock;
+	private Socket s;
 	private Vector<String> nodes;
-	private static int prvi = 1;
+	private static boolean prvi = true;
+	String[] parseValue;
+	Random rand;
+	String randNodeAddress;
+	private static boolean started = false;
+	private static String player1 = "";
+	private static String player2 = "";
+	private static String row = "";
+	private static String col = "";
+	private static String tokens = "";
+	private static String times = "";
 
 	public BootstrapServerThread(Socket sock, Vector<String> nodes) {
 		this.sock = sock;
@@ -29,8 +39,6 @@ public class BootstrapServerThread implements Runnable {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
 
-			System.out.println("Korisnik " + sock.getInetAddress().getHostAddress() + " se konektovao");
-
 			while (true) {
 
 				// Read message
@@ -41,69 +49,250 @@ public class BootstrapServerThread implements Runnable {
 
 				// Key
 				String key = message[0];
-				int nodePort = Integer.parseInt(message[1]);
+				String value = message[1];
+
+				try {
+					switch (key) {
+						case "NEW":
+
+							// Parse
+							parseValue = value.split(":");
+							String ip = parseValue[0];
+							int nodePort = Integer.parseInt(parseValue[1]);
+
+							// Only New Node call Bootstrap Server
+							if (key.equals(Storage.NEW)) {
+
+								// If he is first one
+								if (isPrvi()) {
+									System.out.println("Prvi čvor " + sock.getInetAddress().getHostAddress() + " se konektovao sa porukom: " + line);
+
+									// Create socket and writer
+									s = new Socket(sock.getInetAddress().getHostAddress(), nodePort);
+									BufferedWriter w = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
+
+									// Create and send IP to FIRST NODE
+									String nodeAddress = sock.getInetAddress().getHostAddress() + ":" + Integer.toString(nodePort);
+
+									// if game started send GUI_INFO
+									if (isStarted()) {
+										nodeAddress += " " + getPlayer1() + "," +
+												getPlayer2() + "," +
+												getRow() + "," +
+												getCol() + "," +
+												getTokens() + "," +
+												getTimes();
+									}
+
+									// Write
+									w.write(
+										Storage.NOTIFY_GLOBAL_PARENT + " " +
+										Storage.FIRST_NODE + " " +
+										nodeAddress
+									);
+
+									System.out.println("SEND: " + Storage.NOTIFY_GLOBAL_PARENT + " " + Storage.NODE + " " + nodeAddress);
+
+									// First is done
+									setPrvi(false);
+
+									// Save info
+									nodes.add(nodeAddress);
+
+									// Close
+									w.flush();
+									s.close();
+
+									// Ispisujemo IP adresu i portove svih cvorova
+									System.out.println("Trenutni čvorovi: " + nodes);
+
+									break;
+								} else {
+									System.out.println("Čvor " + sock.getInetAddress().getHostAddress() + " se konektovao sa porukom: " + line);
+
+									// Create socket and writer
+									s = new Socket(sock.getInetAddress().getHostAddress(), nodePort);
+									BufferedWriter w = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
+
+									// Random addres from nodes
+									while (true) {
+										rand = new Random();
+										int randomNode = rand.nextInt(nodes.size());
+										randNodeAddress = nodes.get(randomNode); // nodePort = 8126; random =  8125
+
+										// If new node equal port from vector
+										if (String.valueOf(nodePort).equals(randNodeAddress.split(":")[1])) {
+											nodes.remove(randNodeAddress);
+
+											continue;
+										}
+
+										// If random node port is down
+										if (ServentListener.isPortInUse(Integer.parseInt(randNodeAddress.split(":")[1]))) {
+											nodes.remove(randNodeAddress);
+											continue;
+										}
+
+										break;
 
 
-				// Only New Node call Bootstrap Server
-				if (key.equals(Storage.NEW)) {
+//										if (String.valueOf(nodePort).equals(randNodeAddress.split(":")[1]) || ServentListener.isPortInUse(Integer.parseInt(randNodeAddress.split(":")[1]))) { // 8126 => true => false
+//											System.out.println(randNodeAddress);
+//											System.out.println(randomNode);
+//											nodes.remove(randomNode);
+//										} else {
+//											System.out.println(randNodeAddress);
+//											System.out.println(randomNode);
+//											break;
+//										}
+									}
+									// if game started send GUI_INFO
+									if (isStarted()) {
+										randNodeAddress += " " + getPlayer1() + "," +
+												getPlayer2() + "," +
+												getRow() + "," +
+												getCol() + "," +
+												getTokens() + "," +
+												getTimes();
+									}
 
-					// If he is first one
-					if (prvi == 1) {
-						System.out.println("Novi cvor");
-						Socket s = new Socket(sock.getInetAddress().getHostAddress(), nodePort);
-						BufferedWriter w = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
+									// Write
+									w.write(
+										Storage.NOTIFY_GLOBAL_PARENT + " " +
+										Storage.NODE + " " +
+										randNodeAddress
+									);
 
-						// Create and send IP to FIRST NODE
-						String nodeAddress = sock.getInetAddress().getHostAddress() + ":" + Integer.toString(nodePort);
-						w.write(Storage.FIRST + " " + nodeAddress);
-						System.out.println(Storage.FIRST + " " + nodeAddress);
+									System.out.println("SEND: " + Storage.NOT_FIRST + " " + randNodeAddress);
 
-						// First is done
-						prvi = 0;
+									// Save info
+									if (!nodes.contains(sock.getInetAddress().getHostAddress() + ":" + Integer.toString(nodePort))) {
+										nodes.add(sock.getInetAddress().getHostAddress() + ":" + Integer.toString(nodePort));
+									}
 
-						// Dodajemo u nas niz IP adrese i portove cvorova
-						nodes.add(nodeAddress);
+									// Close
+									w.flush();
+									s.close();
 
-						w.flush();
-						s.close();
+									// Ispisujemo IP adresu i portove svih cvorova
+									System.out.println("Trenutni čvorovi: " + nodes);
+								}
+							} else {
+								System.out.println("Losa kljucna rec za slanje serveru.");
+							}
 
-						// Ispisujemo IP adresu i portove svih cvorova
-						System.out.println(nodes);
+							System.out.println("--------------------------------------------------");
 
-						break;
-					} else {
-						System.out.println("Ostali cvor");
-						Socket s = new Socket(sock.getInetAddress().getHostAddress(), nodePort);
-						BufferedWriter w = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
+							// Close
+							reader.close();
+							writer.close();
+							sock.close();
+							break;
+						case "GUI_INFO":
+							System.out.println("GUI " + sock.getInetAddress().getHostAddress() + " se konektovao sa porukom: " + line);
 
-						Random rand = new Random();
-						String randNodeAddress = nodes.get(rand.nextInt(nodes.size()));
+							// Parse
+							parseValue = message[2].split(",");
 
-//						String[] ip = randNodeAddress.split(";");
-//						String randNodePort = ip[1];
+							setPlayer1(parseValue[0]);
+							setPlayer2(parseValue[1]);
+							setRow(parseValue[2]);
+							setCol(parseValue[3]);
+							setTokens(parseValue[4]);
+							setTimes(parseValue[5]);
 
-						w.write(Storage.NOT_FIRST + " " + randNodeAddress);
-						System.out.println(Storage.NOT_FIRST + " " + randNodeAddress);
+							setStarted(true);
 
-						nodes.add(sock.getInetAddress().getHostAddress() + ":" + Integer.toString(nodePort));
+							if (!nodes.isEmpty()) {
+								rand = new Random();
+								randNodeAddress = nodes.get(rand.nextInt(nodes.size()));
+								s = new Socket(randNodeAddress.split(":")[0], Integer.parseInt(randNodeAddress.split(":")[1]));
+								randNodeAddress += " " + getPlayer1() + "," +
+										getPlayer2() + "," +
+										getRow() + "," +
+										getCol() + "," +
+										getTokens() + "," +
+										getTimes();
 
-						w.flush();
-						s.close();
+								SocketUtils.writeLine(s, Storage.GUI_INFO + " " + randNodeAddress);
+								System.out.println("SEND: " + Storage.GUI_INFO + " " + randNodeAddress);
+							}
+							break;
+						default:
+							break;
 
-						// Ispisujemo IP adresu i portove svih cvorova
-						System.out.println(nodes);
 					}
-				} else {
-					System.out.println("Nije dobro");
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
 			}
-
-			reader.close();
-			writer.close();
-			sock.close();
 
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
+	}
+
+	public static String getPlayer1() {
+		return player1;
+	}
+
+	public static void setPlayer1(String player1) {
+		BootstrapServerThread.player1 = player1;
+	}
+
+	public static String getPlayer2() {
+		return player2;
+	}
+
+	public static void setPlayer2(String player2) {
+		BootstrapServerThread.player2 = player2;
+	}
+
+	public static String getRow() {
+		return row;
+	}
+
+	public static void setRow(String row) {
+		BootstrapServerThread.row = row;
+	}
+
+	public static String getCol() {
+		return col;
+	}
+
+	public static void setCol(String col) {
+		BootstrapServerThread.col = col;
+	}
+
+	public static String getTokens() {
+		return tokens;
+	}
+
+	public static void setTokens(String tokens) {
+		BootstrapServerThread.tokens = tokens;
+	}
+
+	public static String getTimes() {
+		return times;
+	}
+
+	public static void setTimes(String times) {
+		BootstrapServerThread.times = times;
+	}
+
+	public static boolean isStarted() {
+		return started;
+	}
+
+	public static void setStarted(boolean started) {
+		BootstrapServerThread.started = started;
+	}
+
+	public static boolean isPrvi() {
+		return prvi;
+	}
+
+	public static void setPrvi(boolean prvi) {
+		BootstrapServerThread.prvi = prvi;
 	}
 }
