@@ -1,18 +1,14 @@
 package servent;
 import connect5.Operations;
 import global.Methods;
-import graph.Graph;
-import graph.GraphSingleton;
 import global.Storage;
-import gui.Component;
-
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.concurrent.TimeUnit;
 
 public class Responder implements Runnable{
 
@@ -63,6 +59,12 @@ public class Responder implements Runnable{
 						ServentSingleton.getInstance().setId("0");
 						ServentSingleton.getInstance().setEmptyLocalChild(2);
 						ServentSingleton.getInstance().updateList("0", ip + ":" + port);
+
+						ServentSingleton.getInstance().setResultPlayer1(0);
+						ServentSingleton.getInstance().setResultPlayer2(0);
+						ServentSingleton.getInstance().setLocalResultPlayer1(0);
+						ServentSingleton.getInstance().setLocalResultPlayer2(0);
+						ServentSingleton.getInstance().setIzigravanje("0");
 
 						// CIRCLE CHECK
 						try {
@@ -382,7 +384,56 @@ public class Responder implements Runnable{
 						}
 						break;
 					case "GAME":
+						// If it is created node
+						if (ServentSingleton.getInstance().getId() != null) {
 
+							// If it is global parent
+							if (Methods.isGlobalParent(ServentSingleton.getInstance().getId())) {
+
+								String[] addressParent = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId()).split(":");
+
+								// Create socket
+								try {
+									socket = new Socket(addressParent[0], Integer.parseInt(addressParent[1]));
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+
+								// Call accept child NOTIFY_CHILD ACCEPT_NODE ip:port map id
+								SocketUtils.writeLine(
+										socket,
+										Storage.NOTIFY_ALL + " " +
+												Storage.GAME + " " +
+												socket.getInetAddress().getHostAddress() + ":" +
+												ServentListener.LISTENER_PORT + " " +
+												message[3] + " " +
+												ServentSingleton.getInstance().getId() + " " +
+												message[4]
+								);
+							} else {
+								// Go to global parent
+
+								String[] addressParent = ServentSingleton.getInstance().getList().get(Methods.getParent(ServentSingleton.getInstance().getList())).split(":");
+
+								// Create socket
+								try {
+									socket = new Socket(addressParent[0], Integer.parseInt(addressParent[1]));
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+
+								// Call accept child NOTIFY_CHILD ACCEPT_NODE ip:port map id
+								SocketUtils.writeLine(
+										socket,
+										Storage.NOTIFY_GLOBAL_PARENT + " " +
+												Storage.GAME + " " +
+												socket.getInetAddress().getHostAddress() + ":" +
+												ServentListener.LISTENER_PORT + " " +
+												message[3] + " " +
+												message[4]
+								);
+							}
+						}
 						break;
 					case "WIN":
 
@@ -714,6 +765,12 @@ public class Responder implements Runnable{
 							ServentSingleton.getInstance().setList(Methods.createHashMap(Methods.parseHashMap(map)));
 							ServentSingleton.getInstance().updateList(id, ip + ":" + ServentListener.LISTENER_PORT);
 
+							ServentSingleton.getInstance().setResultPlayer1(0);
+							ServentSingleton.getInstance().setResultPlayer2(0);
+							ServentSingleton.getInstance().setLocalResultPlayer1(0);
+							ServentSingleton.getInstance().setLocalResultPlayer2(0);
+							ServentSingleton.getInstance().setIzigravanje("0");
+
 							// CIRCLE CHECK
 							try {
 								socket = new Socket(ip, ServentListener.LISTENER_PORT);
@@ -850,7 +907,7 @@ public class Responder implements Runnable{
 												Storage.FREE_FIELD + " " +
 												socket.getInetAddress().getHostAddress() + ":" +
 												ServentListener.LISTENER_PORT + " " +
-												ServentSingleton.getInstance().getId() + " " +
+												childParentId + " " +
 												childParentFreeFields
 								);
 							}
@@ -897,6 +954,12 @@ public class Responder implements Runnable{
 							// Set Servant
 							ServentSingleton.getInstance().setId(id);
 							ServentSingleton.getInstance().setList(Methods.createHashMap(Methods.parseHashMap(map)));
+
+							ServentSingleton.getInstance().setResultPlayer1(0);
+							ServentSingleton.getInstance().setResultPlayer2(0);
+							ServentSingleton.getInstance().setLocalResultPlayer1(0);
+							ServentSingleton.getInstance().setLocalResultPlayer2(0);
+							ServentSingleton.getInstance().setIzigravanje("0");
 
 							// CIRCLE CHECK
 							try {
@@ -1015,9 +1078,379 @@ public class Responder implements Runnable{
 
 						System.out.println("--------------------------------------------------");
 						break;
+					case "ID_DOWN":
+						// DECREASE IDS
+
+						String parentId1 = message[3];
+
+						// Set Servant
+						// Reduce ID
+						if (ServentSingleton.getInstance().getId().contains(".")) {
+							if (ServentSingleton.getInstance().getId().split("\\.")[0].equals("1")) {
+								ServentSingleton.getInstance().setId(ServentSingleton.getInstance().getId().substring(0, 2) + ServentSingleton.getInstance().getId().substring(4));
+							} else {
+								ServentSingleton.getInstance().setId(ServentSingleton.getInstance().getId().substring(2));
+							}
+						}
+						// Extend map
+						Methods.reduceHashMap(ServentSingleton.getInstance().getList());
+
+						// NOTIFY_ALL
+						Iterator ite = ServentSingleton.getInstance().getList().entrySet().iterator();
+						while (ite.hasNext()) {
+							Map.Entry pair = (Map.Entry) ite.next();
+
+							String[] lastCharacterOfKey = pair.getKey().toString().split("\\.");
+
+							// Notify NODE_1 and NODE_2 with extend id and new map
+							if (lastCharacterOfKey[lastCharacterOfKey.length - 1].equals(Storage.NODE_1) || lastCharacterOfKey[lastCharacterOfKey.length - 1].equals(Storage.NODE_2)) {
+								String[] addressOfNode1 = ServentSingleton.getInstance().getList().get(pair.getKey()).split(":");
+
+								try {
+									socket = new Socket(addressOfNode1[0], Integer.parseInt(addressOfNode1[1]));
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+
+								SocketUtils.writeLine(
+										socket,
+										Storage.NOTIFY_ALL + " " +
+												Storage.ID_DOWN_MAP + " " +
+												socket.getInetAddress().getHostAddress() + ":" +
+												ServentListener.LISTENER_PORT + " " +
+												ServentSingleton.getInstance().getList().toString().replace(" ", "--")
+								);
+
+							} else if (!pair.getKey().toString().equals(parentId1) && !pair.getKey().toString().equals(ServentSingleton.getInstance().getId())) {
+								// Notify other parent if exist
+								String[] parseAddressAndFreeFields = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(" ");
+								String[] addressOfNode1 = parseAddressAndFreeFields[0].split(":");
+
+								try {
+									socket = new Socket(addressOfNode1[0], Integer.parseInt(addressOfNode1[1]));
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+
+								SocketUtils.writeLine(
+										socket,
+										Storage.NOTIFY_ALL + " " +
+												Storage.ID_DOWN + " " +
+												socket.getInetAddress().getHostAddress() + ":" +
+												ServentListener.LISTENER_PORT + " " +
+												ServentSingleton.getInstance().getId()
+								);
+							}
+						}
+
+						// Show id
+						System.out.println("Id : " + ServentSingleton.getInstance().getId());
+
+						// Show map
+						System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
+
+						System.out.println("--------------------------------------------------");
+
+						break;
+
+					case "ID_DOWN_MAP":
+						// CHILD NOTIFY
+
+						String mapReduce = message[3];
+
+						// Set Servant
+						// Reduce ID
+						if (ServentSingleton.getInstance().getId().contains(".")) {
+							if (ServentSingleton.getInstance().getId().split("\\.")[0].equals("1")) {
+								ServentSingleton.getInstance().setId(ServentSingleton.getInstance().getId().substring(0, 2) + ServentSingleton.getInstance().getId().substring(4));
+							} else {
+								ServentSingleton.getInstance().setId(ServentSingleton.getInstance().getId().substring(2));
+							}
+						}
+
+						// Set new map from parent
+						ServentSingleton.getInstance().setList(Methods.createHashMap(Methods.parseHashMap(mapReduce)));
+
+						// Show id
+						System.out.println("Id : " + ServentSingleton.getInstance().getId());
+
+						// Show map
+						System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
+
+						System.out.println("--------------------------------------------------");
+						break;
+					case "GAME":
+
+						// Check if new game started!
+						if (!ServentSingleton.getInstance().getIzigravanje().equals(message[5])) {
+							System.out.println("NOVA IGRA");
+							ServentSingleton.getInstance().setResultPlayer1(0);
+							ServentSingleton.getInstance().setResultPlayer2(0);
+							ServentSingleton.getInstance().setLocalResultPlayer1(0);
+							ServentSingleton.getInstance().setLocalResultPlayer2(0);
+							ServentSingleton.getInstance().setIzigravanje(message[5]);
+						}
+
+						String game = message[3];
+
+						String gameParentId = message[4];
+
+						String[] parseOption = game.split(":");
+						String player1 = parseOption[0];
+						String player2 = parseOption[1];
+						int row = Integer.parseInt(parseOption[2]);
+						int col = Integer.parseInt(parseOption[3]);
+						int tokens = Integer.parseInt(parseOption[4]);
+						int times = Integer.parseInt(parseOption[5]);
+						int tempTimes;
+						int timesDiv;
+
+						if (Methods.isGlobalParent(ServentSingleton.getInstance().getId())) {
+							timesDiv = Methods.getTimesForEachNode(ServentSingleton.getInstance().getList());
+							tempTimes = times / timesDiv; // 1000 / 3 = > 333
+							tempTimes += times % timesDiv; // 334
+						} else {
+							tempTimes = Integer.parseInt(parseOption[6]);
+							timesDiv = Integer.parseInt(parseOption[7]);
+						}
+
+						ServentSingleton.getInstance().setPlayer1(player1);
+						ServentSingleton.getInstance().setPlayer2(player2);
+						ServentSingleton.getInstance().setRow(row);
+						ServentSingleton.getInstance().setCol(col);
+						ServentSingleton.getInstance().setTokens(tokens);
+						ServentSingleton.getInstance().setTimes(times);
+						ServentSingleton.getInstance().setTempTimes(tempTimes);
+
+
+						// Start game
+						GameListener gameListener = new GameListener();
+						gameListener.respond();
+
+						if (Methods.isGlobalParent(ServentSingleton.getInstance().getId())) {
+							tempTimes -= times % timesDiv;
+						}
+
+//						System.out.println(tempTimes);
+
+						// NOTIFY_ALL
+						if (!Methods.isNode1(ServentSingleton.getInstance().getId()) && !Methods.isNode2(ServentSingleton.getInstance().getId())) {
+							Iterator iter = ServentSingleton.getInstance().getList().entrySet().iterator();
+							while (iter.hasNext()) {
+								Map.Entry pair = (Map.Entry) iter.next();
+
+								// Not send to same node which call case
+								if (!pair.getKey().toString().equals(gameParentId)) {
+									String[] notifyAddress;
+
+									if (ServentSingleton.getInstance().getList().get(pair.getKey().toString()).contains(" ")) {
+										String[] parseToNotifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(" ");
+										notifyAddress = parseToNotifyAddress[0].split(":");
+									} else {
+										notifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(":");
+									}
+
+									if (Methods.isNode1(pair.getKey().toString()) && !ServentSingleton.getInstance().getId().equals(pair.getKey().toString())) {
+										try {
+											socket = new Socket(notifyAddress[0], Integer.parseInt(notifyAddress[1]));
+										} catch (IOException e) {
+											e.printStackTrace();
+										}
+
+										SocketUtils.writeLine(
+												socket,
+												Storage.NOTIFY_ALL + " " +
+														Storage.GAME + " " +
+														socket.getInetAddress().getHostAddress() + ":" +
+														ServentListener.LISTENER_PORT + " " +
+														player1 + ":" + player2 + ":" + row + ":" + col + ":" + tokens + ":" + times + ":" + tempTimes + ":" + timesDiv + " " +
+														ServentSingleton.getInstance().getId() + " " +
+														message[5]
+										);
+
+
+									} else if (Methods.isNode2(pair.getKey().toString()) && !ServentSingleton.getInstance().getId().equals(pair.getKey().toString())) {
+										try {
+											socket = new Socket(notifyAddress[0], Integer.parseInt(notifyAddress[1]));
+										} catch (IOException e) {
+											e.printStackTrace();
+										}
+
+										SocketUtils.writeLine(
+												socket,
+												Storage.NOTIFY_ALL + " " +
+														Storage.GAME + " " +
+														socket.getInetAddress().getHostAddress() + ":" +
+														ServentListener.LISTENER_PORT + " " +
+														player1 + ":" + player2 + ":" + row + ":" + col + ":" + tokens + ":" + times + ":" + tempTimes + ":" + timesDiv + " " +
+														ServentSingleton.getInstance().getId() + " " +
+														message[5]
+										);
+
+									} else if (!pair.getKey().toString().equals(ServentSingleton.getInstance().getId())) {
+										// Notify other parent if exist
+									String[] parseAddressAndFreeFields = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(" ");
+									String[] addressOfNode1 = parseAddressAndFreeFields[0].split(":");
+
+									try {
+										socket = new Socket(addressOfNode1[0], Integer.parseInt(addressOfNode1[1]));
+									} catch (IOException e) {
+										e.printStackTrace();
+									}
+
+									SocketUtils.writeLine(
+											socket,
+											Storage.NOTIFY_ALL + " " +
+													Storage.GAME + " " +
+													socket.getInetAddress().getHostAddress() + ":" +
+													ServentListener.LISTENER_PORT + " " +
+													player1 + ":" + player2 + ":" + row + ":" + col + ":" + tokens + ":" + times + ":" + tempTimes + ":" + timesDiv + " " +
+													ServentSingleton.getInstance().getId() + " " +
+													message[5]
+									);
+									}
+								}
+
+							}
+						}
+						break;
+					case "WIN":
+
+						String[] notifyAddress;
+						String[] winnersChildParent = message[5].split(":");
+
+						if (ServentSingleton.getInstance().getIzigravanje().equals(message[4])) {
+							ServentSingleton.getInstance().setResultPlayer1(ServentSingleton.getInstance().getResultPlayer1() + Integer.parseInt(winnersChildParent[0]));
+							ServentSingleton.getInstance().setResultPlayer2(ServentSingleton.getInstance().getResultPlayer2() + Integer.parseInt(winnersChildParent[1]));
+						} else {
+							System.out.println("NOVA IGRA");
+							ServentSingleton.getInstance().setResultPlayer1(Integer.parseInt(winnersChildParent[0]));
+							ServentSingleton.getInstance().setResultPlayer2(Integer.parseInt(winnersChildParent[1]));
+						}
+//						ServentSingleton.getInstance().setResultPlayer1(ServentSingleton.getInstance().getResultPlayer1() + Integer.parseInt(winnersChildParent[0]));
+//						ServentSingleton.getInstance().setResultPlayer2(ServentSingleton.getInstance().getResultPlayer2() + Integer.parseInt(winnersChildParent[1]));
+
+
+//						System.out.println("Ms : " + message[6]);
+//						System.out.println("Time end : " + ((ServentSingleton.getInstance().getTimes() - (ServentSingleton.getInstance().getResultPlayer1() + ServentSingleton.getInstance().getResultPlayer2())) / Storage.TIMES_PER_SEC) * Integer.parseInt(message[6]));
+						long millis = ((ServentSingleton.getInstance().getTimes() - (ServentSingleton.getInstance().getResultPlayer1() + ServentSingleton.getInstance().getResultPlayer2())) / Storage.TIMES_PER_SEC) * ServentSingleton.getInstance().getLoadTime();
+
+//						System.out.println(String.format("%d min, %d sec",
+//								TimeUnit.MILLISECONDS.toMinutes(millis),
+//								TimeUnit.MILLISECONDS.toSeconds(millis) -
+//										TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis))
+//						) + " - " + ServentSingleton.getInstance().getLoadTime() + " ms");
+
+						Iterator itera = ServentSingleton.getInstance().getList().entrySet().iterator();
+						while (itera.hasNext()) {
+							Map.Entry pair = (Map.Entry) itera.next();
+
+							// ne vracaj nazad i ne salji samom sebi
+							if (!pair.getKey().toString().equals(ServentSingleton.getInstance().getId()) && !pair.getKey().toString().equals(message[3])) {
+
+								// ako su node
+								if (Methods.isNode1(pair.getKey().toString()) || Methods.isNode2(pair.getKey().toString())) {
+									if (!(Methods.isNode1(message[3]) || Methods.isNode2(message[3]))) {
+										if (pair.getValue().toString().contains(" ")) {
+											notifyAddress = pair.getValue().toString().split(" ")[0].split(":");
+										} else {
+											notifyAddress = pair.getValue().toString().split(":");
+										}
+
+										if (!ServentListener.isPortInUse(Integer.parseInt(notifyAddress[1]))) {
+											while (true) {
+												try {
+													socket = new Socket(notifyAddress[0], Integer.parseInt(notifyAddress[1]));
+
+													SocketUtils.writeLine(
+															socket,
+															Storage.NOTIFY_ALL + " " +
+																	Storage.WIN_CHILD + " " +
+																	socket.getInetAddress().getHostAddress() + ":" +
+																	ServentListener.LISTENER_PORT + " " +
+																	ServentSingleton.getInstance().getId() + " " +
+																	ServentSingleton.getInstance().getIzigravanje() + " " +
+																	winnersChildParent[0] + ":" + winnersChildParent[1] + " " +
+																	message[6]
+													);
+													break;
+												} catch (SocketException e) {
+													System.out.println("SocketException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
+												} catch (IOException e) {
+													System.out.println("IOException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
+												}
+											}
+										} else {
+											System.out.println("Can't connect to : " + notifyAddress[0] + ":" + notifyAddress[1]);
+										}
+//										System.out.println("pozovi child! " + Integer.parseInt(notifyAddress[1]) + " " + message[3]);
+									}
+								} else {
+									if (pair.getValue().toString().contains(" ")) {
+										notifyAddress = pair.getValue().toString().split(" ")[0].split(":");
+									} else {
+										notifyAddress = pair.getValue().toString().split(":");
+									}
+
+									if (!ServentListener.isPortInUse(Integer.parseInt(notifyAddress[1]))) {
+										while (true) {
+											try {
+												socket = new Socket(notifyAddress[0], Integer.parseInt(notifyAddress[1]));
+
+												SocketUtils.writeLine(
+														socket,
+														Storage.NOTIFY_ALL + " " +
+																Storage.WIN + " " +
+																socket.getInetAddress().getHostAddress() + ":" +
+																ServentListener.LISTENER_PORT + " " +
+																ServentSingleton.getInstance().getId() + " " +
+																ServentSingleton.getInstance().getIzigravanje() + " " +
+																winnersChildParent[0] + ":" + winnersChildParent[1] + " " +
+																message[6]
+												);
+												break;
+											} catch (SocketException e) {
+												System.out.println("SocketException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
+											} catch (IOException e) {
+												System.out.println("IOException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
+											}
+										}
+									} else {
+										System.out.println("Can't connect to : " + notifyAddress[0] + ":" + notifyAddress[1]);
+									}
+
+//									System.out.println("pozovi parent! " + Integer.parseInt(notifyAddress[1]) + " " + message[3]);
+								}
+							}
+
+						}
+						break;
+					case "WIN_CHILD":
+//						System.out.println("Ms : " + message[6]);
+
+//						System.out.println("Time end : " + ((ServentSingleton.getInstance().getTimes() - (ServentSingleton.getInstance().getResultPlayer1() + ServentSingleton.getInstance().getResultPlayer2())) / Storage.TIMES_PER_SEC) * Integer.parseInt(message[6]));
+						long millis1 = ((ServentSingleton.getInstance().getTimes() - (ServentSingleton.getInstance().getResultPlayer1() + ServentSingleton.getInstance().getResultPlayer2())) / Storage.TIMES_PER_SEC) * ServentSingleton.getInstance().getLoadTime();
+//						System.out.println(String.format("%d min, %d sec",
+//								TimeUnit.MILLISECONDS.toMinutes(millis1),
+//								TimeUnit.MILLISECONDS.toSeconds(millis1) -
+//										TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis1))
+//						) + " - " + ServentSingleton.getInstance().getLoadTime() + " ms");
+
+						String[] winnersChildNotify = message[5].split(":");
+						if (ServentSingleton.getInstance().getIzigravanje().equals(message[4])) {
+							ServentSingleton.getInstance().setResultPlayer1(ServentSingleton.getInstance().getResultPlayer1() + Integer.parseInt(winnersChildNotify[0]));
+							ServentSingleton.getInstance().setResultPlayer2(ServentSingleton.getInstance().getResultPlayer2() + Integer.parseInt(winnersChildNotify[1]));
+						} else {
+							System.out.println("NOVA IGRA");
+							System.out.println("--------------------------------------------------");
+							ServentSingleton.getInstance().setIzigravanje(message[4]);
+							ServentSingleton.getInstance().setResultPlayer1(Integer.parseInt(winnersChildNotify[0]));
+							ServentSingleton.getInstance().setResultPlayer2(Integer.parseInt(winnersChildNotify[1]));
+						}
+
+						break;
 				}
 				break;
-
 			case "CIRCLE_CHECK":
 
 				String[] freeFieldAddress = null;
@@ -1067,7 +1500,7 @@ public class Responder implements Runnable{
 							freeFieldId = ServentSingleton.getInstance().getId();
 							freeFieldNumber = 1;
 						}
-					} else if(node1Id != null && ServentListener.isPortInUse(Integer.parseInt(ServentSingleton.getInstance().getList().get(node1Id).split(":")[1]))) {
+					} else if (node1Id != null && ServentListener.isPortInUse(Integer.parseInt(ServentSingleton.getInstance().getList().get(node1Id).split(":")[1]))) {
 						// if NODE_1 exist and is NOT alive
 
 						System.out.println("Node : 1 [DEAD]");
@@ -1086,6 +1519,51 @@ public class Responder implements Runnable{
 						freeFieldAddress = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId()).split(":");
 						freeFieldId = ServentSingleton.getInstance().getId();
 						freeFieldNumber = 1;
+					} else {
+						// if parent is removed, update all ids
+						Iterator it = ServentSingleton.getInstance().getList().entrySet().iterator();
+						while (it.hasNext()) {
+							Map.Entry pair = (Map.Entry) it.next();
+
+							if (Methods.isLocalParent(pair.getKey().toString()) && !Methods.isGlobalParent(pair.getKey().toString()) && !pair.getKey().toString().equals(ServentSingleton.getInstance().getId())) {
+								if (ServentListener.isPortInUse(Integer.parseInt(ServentSingleton.getInstance().getList().get(pair.getKey()).split(" ")[0].split(":")[1]))) {
+
+									// Wait! Maybe is not DEAD!!!
+
+									try {
+										Thread.sleep(2500);
+									} catch (InterruptedException e) {
+										e.printStackTrace();
+									}
+
+									// Check again
+									if (ServentListener.isPortInUse(Integer.parseInt(ServentSingleton.getInstance().getList().get(pair.getKey()).split(" ")[0].split(":")[1]))) {
+
+										// Notify parent
+										String[] addressOfParent = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId()).split(":");
+
+										// Set Servant
+										// Update map
+										ServentSingleton.getInstance().getList().remove(pair.getKey());
+
+										try {
+											socket = new Socket(addressOfParent[0], Integer.parseInt(addressOfParent[1]));
+										} catch (IOException e) {
+											e.printStackTrace();
+										}
+
+										SocketUtils.writeLine(
+												socket,
+												Storage.NOTIFY_ALL + " " +
+														Storage.ID_DOWN + " " +
+														socket.getInetAddress().getHostAddress() + ":" +
+														ServentListener.LISTENER_PORT + " " +
+														ServentSingleton.getInstance().getId()
+										);
+									}
+								}
+							}
+						}
 					}
 				} else if (Methods.isNode1(ServentSingleton.getInstance().getId())) {
 					// If it is NODE_1
@@ -1123,7 +1601,6 @@ public class Responder implements Runnable{
 						} else {
 
 							System.out.println("Parent : [DEAD]");
-							System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
 
 							// Set Servant
 							// Update map
@@ -1151,7 +1628,7 @@ public class Responder implements Runnable{
 					// If it is NODE_2
 
 					String parentId = ServentSingleton.getInstance().getId().substring(0, ServentSingleton.getInstance().getId().length() - 1) + "0";
-					String node1Id = Methods.getNode2(ServentSingleton.getInstance().getList());
+					String node1Id = Methods.getNode1(ServentSingleton.getInstance().getList());
 
 					// if Parent exist and is NOT alive
 					if (node1Id != null && ServentListener.isPortInUse(Integer.parseInt(ServentSingleton.getInstance().getList().get(node1Id).split(":")[1]))) {
@@ -1215,21 +1692,23 @@ public class Responder implements Runnable{
 				}
 
 				if (freeFieldAddress != null && freeFieldId != null && freeFieldNumber != -1) {
-					try {
-						socket = new Socket(freeFieldAddress[0], Integer.parseInt(freeFieldAddress[1]));
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+					if (!ServentListener.isPortInUse(Integer.parseInt(freeFieldAddress[1]))) {
+						try {
+							socket = new Socket(freeFieldAddress[0], Integer.parseInt(freeFieldAddress[1]));
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 
-					SocketUtils.writeLine(
-							socket,
-							Storage.NOTIFY_PARENT + " " +
-									Storage.FREE_FIELD + " " +
-									socket.getInetAddress().getHostAddress() + ":" +
-									ServentListener.LISTENER_PORT + " " +
-									freeFieldId + " " +
-									freeFieldNumber
-					);
+						SocketUtils.writeLine(
+								socket,
+								Storage.NOTIFY_PARENT + " " +
+										Storage.FREE_FIELD + " " +
+										socket.getInetAddress().getHostAddress() + ":" +
+										ServentListener.LISTENER_PORT + " " +
+										freeFieldId + " " +
+										freeFieldNumber
+						);
+					}
 				}
 
 
@@ -1241,18 +1720,18 @@ public class Responder implements Runnable{
 
 				// call parent again
 				String[] addressOfParent = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId()).split(":");
+				if (!ServentListener.isPortInUse(Integer.parseInt(addressOfParent[1]))) {
+					try {
+						socket = new Socket(addressOfParent[0], Integer.parseInt(addressOfParent[1]));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 
-				try {
-					socket = new Socket(addressOfParent[0], Integer.parseInt(addressOfParent[1]));
-				} catch (IOException e) {
-					e.printStackTrace();
+					SocketUtils.writeLine(
+							socket,
+							Storage.CIRCLE_CHECK + " test 123123:3123"
+					);
 				}
-
-				SocketUtils.writeLine(
-						socket,
-						Storage.CIRCLE_CHECK + " test 123123:3123"
-				);
-
 				break;
 			default:
 				System.out.println("Wrong communication.");

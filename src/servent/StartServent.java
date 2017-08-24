@@ -40,6 +40,9 @@ public class StartServent {
 			// Kreiramo Servent listener koji slusa na odredjenom portu (Ceka da se neki servent zakaci na njega)
 			listener.startListener();
 
+			InputListener inputListener = new InputListener();
+			inputListener.respond();
+
 			System.out.println("ServerListener: " + myPort);
 			boolean doPing = Boolean.parseBoolean(prop.getProperty("doping"));
 

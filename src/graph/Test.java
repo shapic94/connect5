@@ -40,6 +40,10 @@ public class Test {
         } else {
             System.out.println("false");
         }
+
+        System.out.println(1000%3);
+
+        System.out.println(Methods.getHash("127.0.0.1:8125"));
 //       System.out.println(ServentListener.isPortInUse(1234));
 
     }

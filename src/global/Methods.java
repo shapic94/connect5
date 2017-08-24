@@ -1,8 +1,11 @@
 package global;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Methods {
 
@@ -177,9 +180,9 @@ public class Methods {
         return test;
     }
 
-    public static HashMap createHashMap (String[] hashMapList) {
+    public static ConcurrentHashMap createHashMap (String[] hashMapList) {
         String[] test;
-        HashMap<String, String> hashMap = new HashMap<String, String>();
+        ConcurrentHashMap<String, String> hashMap = new ConcurrentHashMap<String, String>();
         for (int i = 0;i < hashMapList.length; i++) {
             test = hashMapList[i].split("=");
             hashMap.put(test[0], test[1]);
@@ -188,15 +191,38 @@ public class Methods {
         return hashMap;
     }
 
-    public static void extendHashMap (HashMap map) {
+    public static void extendHashMap (ConcurrentHashMap map) {
         String temp;
-        HashMap<String, String> cloneMap = new HashMap<String, String>(map);
+        ConcurrentHashMap<String, String> cloneMap = new ConcurrentHashMap<String, String>(map);
         Iterator it = cloneMap.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry) it.next();
             temp = pair.getKey().toString();
             Object obj = map.remove(pair.getKey());
             map.put("0." + temp, obj);
+        }
+    }
+
+    public static void reduceHashMap (ConcurrentHashMap map) {
+        String temp;
+
+        ConcurrentHashMap<String, String> cloneMap = new ConcurrentHashMap<String, String>(map);
+        Iterator it = cloneMap.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            temp = pair.getKey().toString();
+            Object obj = map.remove(pair.getKey());
+
+            if (temp.split("\\.")[0].equals("1")) {
+                if (temp.length() > 4) {
+                    temp = temp.substring(0, 2) + temp.substring(4);
+                } else {
+                    temp = temp.substring(0, 2);
+                }
+            } else {
+                temp = temp.substring(2);
+            }
+            map.put(temp, obj);
         }
     }
 
@@ -246,7 +272,7 @@ public class Methods {
 //        return (int) Math.pow(3, Math.floor(count / 2.0)) - 1;
     }
 
-    public static String getEmptyChildId(HashMap<String, String> map) {
+    public static String getEmptyChildId(ConcurrentHashMap<String, String> map) {
         String[] id;
         boolean second = true;
         boolean third = true;
@@ -305,6 +331,16 @@ public class Methods {
         return parseValue[parseValue.length - 1].equals("0");
     }
 
+    public static String getLocalParent(String id) {
+        if (!id.contains(".")) {
+            return "0";
+        }
+
+        return id.substring(0, id.length() - 1) + "0";
+
+
+    }
+
     public static boolean isNode1(String id) {
         if (!id.contains(".")) {
             return id.equals("1");
@@ -325,7 +361,7 @@ public class Methods {
         return parseValue[parseValue.length - 1].equals("2");
     }
 
-    public static String[] hasFreeParent(HashMap map) {
+    public static String[] hasFreeParent(ConcurrentHashMap map) {
         String[] test = null;
         String[] testReturn = new String[3];
         testReturn[0] = null;
@@ -349,7 +385,7 @@ public class Methods {
     }
 
     // 0.0   1.0   1.1
-    public static String getParent (HashMap map) {
+    public static String getParent (ConcurrentHashMap map) {
         int k = 0;
         boolean bestSet = true;
         int best = 0;
@@ -391,7 +427,7 @@ public class Methods {
         return bestId;
     }
 
-    public static String getNode1 (HashMap map) {
+    public static String getNode1 (ConcurrentHashMap map) {
 
         String[] parseKey;
 
@@ -408,7 +444,7 @@ public class Methods {
         return null;
     }
 
-    public static String getNode2 (HashMap map) {
+    public static String getNode2 (ConcurrentHashMap map) {
 
         String[] parseKey;
 
@@ -423,5 +459,53 @@ public class Methods {
         }
 
         return null;
+    }
+
+    public static int getTimesForEachNode (ConcurrentHashMap map) {
+        int times = 0;
+
+        Iterator it = map.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+
+            if (Methods.isGlobalParent(pair.getKey().toString())) {
+                times += 1;
+                continue;
+            }
+
+            if (Methods.isNode1(pair.getKey().toString()) || Methods.isNode2(pair.getKey().toString())) {
+                times += 1;
+                continue;
+            }
+
+            String[] test = pair.getValue().toString().split(" ");
+            times += Methods.numberOfChildrenGlobal(pair.getKey().toString()) - Integer.parseInt(test[1]) + 1;
+
+        }
+
+        return times;
+    }
+
+    public static String getHash(String s) {
+        try {
+            // Create MD5 Hash
+            MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
+            digest.update(s.getBytes());
+            byte messageDigest[] = digest.digest();
+
+            // Create Hex String
+            StringBuffer hexString = new StringBuffer();
+            for (int i=0; i<messageDigest.length; i++)
+                hexString.append(Integer.toHexString(0xFF & messageDigest[i]));
+            return hexString.toString();
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    public static long loadTime(long oldLoadTime, long newLoadTime) {
+        return (oldLoadTime + newLoadTime) / 2;
     }
 }

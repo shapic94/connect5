@@ -1,9 +1,18 @@
 package connect5;
 
 import entity.Token;
+import global.Methods;
 import gui.Component;
 import global.Storage;
+import servent.ServentListener;
+import servent.ServentSingleton;
+import servent.SocketUtils;
 
+import java.io.IOException;
+import java.net.Socket;
+import java.net.SocketException;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -11,8 +20,10 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class Operations implements OperationsAbstract {
 
+    Socket socket;
+
     @Override
-    public Object[] init(String player1, String player2, int row, int col, int tokens, int times) {
+    public int[] init(String player1, String player2, int row, int col, int tokens, int times) {
 
         // Create algorithm
         Algorithm algorithm = new Algorithm();
@@ -45,14 +56,14 @@ public class Operations implements OperationsAbstract {
         object[1] = black;
         object[2] = white;
 
-        test(algorithm, black, white);
+        int[] rezultat = test(algorithm, black, white);
 
-        return object;
+        return rezultat;
 
     }
 
     @Override
-    public void test(Algorithm algorithm, Token black, Token white) {
+    public int[] test(Algorithm algorithm, Token black, Token white) {
         // Random column
         int random;
 
@@ -62,7 +73,16 @@ public class Operations implements OperationsAbstract {
         // Check if token has already in column
         int[] columnHasToken = new int[algorithm.getCol()];
 
+        int sendPackages = 0;
 
+        int crni = 0;
+        int beli = 0;
+
+        long startTime = 0;
+        long endTime = 0;
+        long totalTime = 0;
+
+        startTime = System.currentTimeMillis();
         for (int i = 0; i < algorithm.getTimes(); i++) {
 
             // Start test
@@ -106,13 +126,160 @@ public class Operations implements OperationsAbstract {
 //                System.out.println("[Operations][test()] Cestitamo, " + white.getName() + ", Row: " + algorithm.getRowWinner() + ", Column: " + algorithm.getColWinner());
             }
 
+            if (black.isWinner()) {
+                ServentSingleton.getInstance().setLocalResultPlayer1(ServentSingleton.getInstance().getLocalResultPlayer1() + 1);
+                ServentSingleton.getInstance().setResultPlayer1(ServentSingleton.getInstance().getResultPlayer1() + 1);
+                crni++;
+            }
+
+            if (white.isWinner()) {
+                ServentSingleton.getInstance().setLocalResultPlayer2(ServentSingleton.getInstance().getLocalResultPlayer2() + 1);
+                ServentSingleton.getInstance().setResultPlayer2(ServentSingleton.getInstance().getResultPlayer2() + 1);
+                beli++;
+            }
+
+//            ServentSingleton.getInstance().setResultPlayer1(ServentSingleton.getInstance().getResultPlayer1() + black.setNumberOfWins(););
+//            ServentSingleton.getInstance().setResultPlayer2(ServentSingleton.getInstance().getResultPlayer2() + object[1]);
+//
+//            System.out.println(ServentSingleton.getInstance().getPlayer1() + " : " + ServentSingleton.getInstance().getResultPlayer1());
+//            System.out.println(ServentSingleton.getInstance().getPlayer2() + " : " + ServentSingleton.getInstance().getResultPlayer2());
+
+
+            if (sendPackages == Storage.TIMES_PER_SEC || i + 1 == algorithm.getTimes()) {
+                endTime   = System.currentTimeMillis();
+                totalTime = endTime - startTime;
+                startTime = System.currentTimeMillis();
+                String[] notifyAddress;
+
+                ServentSingleton.getInstance().setLoadTime(Methods.loadTime(ServentSingleton.getInstance().getLoadTime(), totalTime));
+
+                Iterator it = ServentSingleton.getInstance().getList().entrySet().iterator();
+                while (it.hasNext()) {
+                    Map.Entry pair = (Map.Entry) it.next();
+
+                    // ne javljaj samom sebi
+                    if (!pair.getKey().toString().equals(ServentSingleton.getInstance().getId())) {
+
+                        // javi childovima
+                        if (Methods.isNode1(pair.getKey().toString()) || Methods.isNode2(pair.getKey().toString())) {
+                            notifyAddress = pair.getValue().toString().split(":");
+
+                            if (!ServentListener.isPortInUse(Integer.parseInt(notifyAddress[1]))) {
+                                while (true) {
+                                    try {
+                                        socket = new Socket(notifyAddress[0], Integer.parseInt(notifyAddress[1]));
+
+                                        SocketUtils.writeLine(
+                                                socket,
+                                                Storage.NOTIFY_ALL + " " +
+                                                        Storage.WIN_CHILD + " " +
+                                                        socket.getInetAddress().getHostAddress() + ":" +
+                                                        ServentListener.LISTENER_PORT + " " +
+                                                        ServentSingleton.getInstance().getId() + " " +
+                                                        ServentSingleton.getInstance().getIzigravanje() + " " +
+                                                        crni + ":" + beli + " " +
+                                                        totalTime
+                                        );
+                                        break;
+                                    } catch (SocketException e) {
+                                        System.out.println("SocketException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
+                                    } catch (IOException e) {
+                                        System.out.println("IOException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
+                                    }
+                                }
+                            } else {
+                                System.out.println("Can't connect to : " + notifyAddress[0] + ":" + notifyAddress[1]);
+                            }
+                        } else if ((Methods.isNode1(ServentSingleton.getInstance().getId()) || Methods.isNode2(ServentSingleton.getInstance().getId()))) {
+                            if (pair.getKey().toString().equals(Methods.getLocalParent(ServentSingleton.getInstance().getId()))) {
+                                //javi parentu
+
+                                if (pair.getValue().toString().contains(" ")) {
+                                    notifyAddress = pair.getValue().toString().split(" ")[0].split(":");
+                                } else {
+                                    notifyAddress = pair.getValue().toString().split(":");
+                                }
+
+                                if (!ServentListener.isPortInUse(Integer.parseInt(notifyAddress[1]))) {
+                                    while (true) {
+                                        try {
+                                            socket = new Socket(notifyAddress[0], Integer.parseInt(notifyAddress[1]));
+
+                                            SocketUtils.writeLine(
+                                                    socket,
+                                                    Storage.NOTIFY_ALL + " " +
+                                                            Storage.WIN + " " +
+                                                            socket.getInetAddress().getHostAddress() + ":" +
+                                                            ServentListener.LISTENER_PORT + " " +
+                                                            ServentSingleton.getInstance().getId() + " " +
+                                                            ServentSingleton.getInstance().getIzigravanje() + " " +
+                                                            crni + ":" + beli + " " +
+                                                            totalTime
+                                            );
+                                            break;
+                                        } catch (SocketException e) {
+                                            System.out.println("SocketException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
+                                        } catch (IOException e) {
+                                            System.out.println("IOException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
+                                        }
+                                    }
+                                } else {
+                                    System.out.println("Can't connect to : " + notifyAddress[0] + ":" + notifyAddress[1]);
+                                }
+                            }
+                        } else {
+                            //javi parentu
+
+                            if (pair.getValue().toString().contains(" ")) {
+                                notifyAddress = pair.getValue().toString().split(" ")[0].split(":");
+                            } else {
+                                notifyAddress = pair.getValue().toString().split(":");
+                            }
+
+                            if (!ServentListener.isPortInUse(Integer.parseInt(notifyAddress[1]))) {
+                                while (true) {
+                                    try {
+                                        socket = new Socket(notifyAddress[0], Integer.parseInt(notifyAddress[1]));
+
+                                        SocketUtils.writeLine(
+                                                socket,
+                                                Storage.NOTIFY_ALL + " " +
+                                                        Storage.WIN + " " +
+                                                        socket.getInetAddress().getHostAddress() + ":" +
+                                                        ServentListener.LISTENER_PORT + " " +
+                                                        ServentSingleton.getInstance().getId() + " " +
+                                                        ServentSingleton.getInstance().getIzigravanje() + " " +
+                                                        crni + ":" + beli + " " +
+                                                        totalTime
+                                        );
+                                        break;
+                                    } catch (SocketException e) {
+                                        System.out.println("SocketException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
+                                    } catch (IOException e) {
+                                        System.out.println("IOException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
+                                    }
+                                }
+                            } else {
+                                System.out.println("Can't connect to : " + notifyAddress[0] + ":" + notifyAddress[1]);
+                            }
+                        }
+                    }
+                }
+
+                sendPackages = 0;
+                crni = 0;
+                beli = 0;
+            }
+
             reset(algorithm, black, white);
+
+            sendPackages++;
         }
 
         // Global winner
-        System.out.println(black.getName() + " : " + black.getNumberOfWins());
-        System.out.println(white.getName() + " : " + white.getNumberOfWins());
-        System.out.println("---------------------------------------------------------------------------------");
+//        System.out.println(black.getName() + " : " + black.getNumberOfWins());
+//        System.out.println(white.getName() + " : " + white.getNumberOfWins());
+//        System.out.println("---------------------------------------------------------------------------------");
 
         // Set Names, number of wins and percent
 //        Component.getInstance().getPlayer1NameL().setText(black.getName());
@@ -127,6 +294,11 @@ public class Operations implements OperationsAbstract {
 //        } else if (black.getNumberOfWins() < white.getNumberOfWins()) {
 //            Component.getInstance().getResultL().setText("Cestitamo, " + white.getName() + ", imate " + (white.getNumberOfWins() - black.getNumberOfWins()) + " pobeda vise i " + (((100 * white.getNumberOfWins()) / algorithm.getTimes()) - ((100 * black.getNumberOfWins()) / algorithm.getTimes())) + "% sanse vise");
 //        }
+        int[] winners = new int[2];
+        winners[0] = black.getNumberOfWins();
+        winners[1] = white.getNumberOfWins();
+
+        return winners;
     }
 
     @Override

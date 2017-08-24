@@ -8,9 +8,9 @@ import entity.Token;
 
 public interface OperationsAbstract {
 
-    void test(Algorithm algorithm, Token black, Token white);
+    int[] test(Algorithm algorithm, Token black, Token white);
     boolean testSameColumn(int[] columnHasToken);
-    Object[] init(String player1, String player2, int row, int col, int tokens, int times);
+    int[] init(String player1, String player2, int row, int col, int tokens, int times);
     int[] play(Algorithm algorithm, Token black, Token white);
     void show(Algorithm algorithm);
     int add(Algorithm algorithm, Token black, Token white);

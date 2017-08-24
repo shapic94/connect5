@@ -64,9 +64,17 @@ public class Storage {
     public static final String FREE_FIELD = "FREE_FIELD";
     public static final String ID = "ID";
     public static final String ID_MAP = "ID_MAP";
+    public static final String ID_DOWN = "ID_DOWN";
+    public static final String ID_DOWN_MAP = "ID_DOWN_MAP";
 
     public static final String NODE_1 = "1";
     public static final String NODE_2 = "2";
 
     public static final String CIRCLE_CHECK = "CIRCLE_CHECK";
+
+    public static final String GAME = "GAME";
+    public static final String WIN = "WIN";
+    public static final String WIN_CHILD = "WIN_CHILD";
+
+    public static final int TIMES_PER_SEC = 100;
 }

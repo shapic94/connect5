@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.net.SocketException;
 
 public class SocketUtils {
 
@@ -26,15 +27,14 @@ public class SocketUtils {
 
 	public static void writeLine(Socket s, String line) {
 		try {
-			BufferedWriter writer = new BufferedWriter(
-					new OutputStreamWriter(
-							s.getOutputStream()));
-
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
 			writer.write(line);
 			writer.write("\n");
 			writer.flush();
+		} catch (SocketException e) {
+			System.out.println("SocketException : " + e.getMessage());
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("IOException : " + e.getMessage());
 		}
 	}
 }
