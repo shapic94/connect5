@@ -814,21 +814,18 @@ public class Responder implements Runnable{
 			case "NOTIFY_CHILD":
 				switch (localKey) {
 					case "NODE":
+
 						// Create socket
 						try {
-							socket = new Socket(ip, Integer.parseInt(port));
-						} catch (IOException e) {
+							info = Storage.NOTIFY_PARENT + " " +
+									Storage.NODE + " " +
+									InetAddress.getLocalHost().getHostAddress() + ":" +
+									ServentListener.LISTENER_PORT;
+
+							ServentListener.createSocket(ip, port, info);
+						} catch (UnknownHostException e) {
 							e.printStackTrace();
 						}
-
-						// Call global parent
-						SocketUtils.writeLine(
-							socket,
-							Storage.NOTIFY_PARENT + " " +
-							Storage.NODE + " " +
-							socket.getInetAddress().getHostAddress() + ":" +
-							ServentListener.LISTENER_PORT
-						);
 						break;
 					case "ACCEPT_NODE":
 
@@ -1423,8 +1420,8 @@ public class Responder implements Runnable{
 						// if NODE_1 exist and is NOT alive
 						if (node1Id != null && isAvailableAddressNode1 != null && ServentListener.isDead(isAvailableAddressNode1[0], Integer.parseInt(isAvailableAddressNode1[1]))) {
 
-							System.out.println("Node : 1 [DEAD]" + isAvailableAddressNode1[0] + ":" + isAvailableAddressNode1[1]);
-							System.out.println("Node : 2 [DEAD]" + isAvailableAddressNode2[0] + ":" + isAvailableAddressNode2[1]);
+							System.out.println("Node : 1 [DEAD] " + isAvailableAddressNode1[0] + ":" + isAvailableAddressNode1[1]);
+							System.out.println("Node : 2 [DEAD] " + isAvailableAddressNode2[0] + ":" + isAvailableAddressNode2[1]);
 
 							// Set Servant
 							// Update map
@@ -1438,7 +1435,7 @@ public class Responder implements Runnable{
 							freeFieldNumber = 2;
 
 						} else if (isAvailableAddressNode2 != null) {
-							System.out.println("Node : 2 [DEAD]" + isAvailableAddressNode2[0] + ":" + isAvailableAddressNode2[1]);
+							System.out.println("Node : 2 [DEAD] " + isAvailableAddressNode2[0] + ":" + isAvailableAddressNode2[1]);
 
 							// Set Servant
 							// Update map
@@ -1458,7 +1455,7 @@ public class Responder implements Runnable{
 					} else if (node1Id != null && isAvailableAddressNode1 != null && ServentListener.isDead(isAvailableAddressNode1[0], Integer.parseInt(isAvailableAddressNode1[1]))) {
 						// if NODE_1 exist and is NOT alive
 
-						System.out.println("Node : 1 [DEAD]" + isAvailableAddressNode1[0] + ":" + isAvailableAddressNode1[1]);
+						System.out.println("Node : 1 [DEAD] " + isAvailableAddressNode1[0] + ":" + isAvailableAddressNode1[1]);
 
 						// Set Servant
 						// Update map
@@ -1502,7 +1499,6 @@ public class Responder implements Runnable{
 
 										// Set Servant
 										// Update map
-										System.out.println("loseeeee");
 										ServentSingleton.getInstance().getList().remove(pair.getKey());
 
 										try {
@@ -1539,8 +1535,8 @@ public class Responder implements Runnable{
 						// if NODE_2 exist and is NOT alive
 						if (node2Id != null && isAvailableAddressNode2 != null && ServentListener.isDead(isAvailableAddressNode2[0], Integer.parseInt(isAvailableAddressNode2[1]))) {
 
-							System.out.println("Parent : [DEAD]" + isAvailableAddressParent[0] + ":" + isAvailableAddressParent[1]);
-							System.out.println("Node : 2 [DEAD]" + isAvailableAddressNode2[0] + ":" + isAvailableAddressNode2[1]);
+							System.out.println("Parent : [DEAD] " + isAvailableAddressParent[0] + ":" + isAvailableAddressParent[1]);
+							System.out.println("Node : 2 [DEAD] " + isAvailableAddressNode2[0] + ":" + isAvailableAddressNode2[1]);
 
 							// Set Servant
 							// Update map
@@ -1562,7 +1558,7 @@ public class Responder implements Runnable{
 							freeFieldNumber = 2;
 						} else if (isAvailableAddressParent != null) {
 
-							System.out.println("Parent : [DEAD]" + isAvailableAddressParent[0] + ":" + isAvailableAddressParent[1]);
+							System.out.println("Parent : [DEAD] " + isAvailableAddressParent[0] + ":" + isAvailableAddressParent[1]);
 
 							// Set Servant
 							// Update map
@@ -1601,8 +1597,8 @@ public class Responder implements Runnable{
 						// if NODE_2 exist and is NOT alive
 						if (parentId != null && isAvailableAddressParent != null && ServentListener.isDead(isAvailableAddressParent[0], Integer.parseInt(isAvailableAddressParent[1]))) {
 
-							System.out.println("Parent : [DEAD]" + isAvailableAddressParent[0] + ":" + isAvailableAddressParent[1]);
-							System.out.println("Node : 1 [DEAD]" + isAvailableAddressNode1[0] + ":" + isAvailableAddressNode1[1]);
+							System.out.println("Parent : [DEAD] " + isAvailableAddressParent[0] + ":" + isAvailableAddressParent[1]);
+							System.out.println("Node : 1 [DEAD] " + isAvailableAddressNode1[0] + ":" + isAvailableAddressNode1[1]);
 
 							// Set Servant
 							// Update map

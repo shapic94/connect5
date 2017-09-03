@@ -518,4 +518,8 @@ public class Methods {
         TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis))
         ) + " - " + loadTime + " ms");
     }
+
+    public static void printInfo() {
+
+    }
 }
