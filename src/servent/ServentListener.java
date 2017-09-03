@@ -71,14 +71,18 @@ public class ServentListener implements Runnable {
 	}
 
 	public static void createSocket(String ip, String port, String info) {
+		boolean cantConnect = false;
 		boolean breakDead = true;
 		while (breakDead) {
 			if (!ServentListener.isDead(ip, Integer.parseInt(port))) {
 				while (true) {
 					try {
 						Socket socket = new Socket(ip, Integer.parseInt(port));
-
 						SocketUtils.writeLine(socket, info);
+
+						if (cantConnect) {
+							System.out.println("Connect to : " + ip + ":" + port);
+						}
 						breakDead = false;
 						break;
 					} catch (SocketException e) {
@@ -88,6 +92,7 @@ public class ServentListener implements Runnable {
 					}
 				}
 			} else {
+				cantConnect = true;
 				System.out.println("Can't connect to : " + ip + ":" + port);
 			}
 		}
