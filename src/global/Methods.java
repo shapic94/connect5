@@ -1,5 +1,9 @@
 package global;
 
+import servent.ServentListener;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -521,5 +525,17 @@ public class Methods {
 
     public static void printInfo() {
 
+    }
+
+    public static String getIp() throws UnknownHostException {
+        return InetAddress.getLocalHost().getHostAddress();
+    }
+
+    public static int getPort() {
+        return ServentListener.LISTENER_PORT;
+    }
+
+    public static String getAddress() throws UnknownHostException {
+        return getIp() + ":" + getPort();
     }
 }
