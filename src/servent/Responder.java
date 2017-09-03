@@ -1401,6 +1401,7 @@ public class Responder implements Runnable{
 				String freeFieldId = null;
 				int freeFieldNumber = -1;
 
+				System.out.println("CIRCLE_CHECK " + ip + ":" + port);
 				// if it is parent
 				if (Methods.isLocalParent(ServentSingleton.getInstance().getId())) {
 					String node1Id = Methods.getNode1(ServentSingleton.getInstance().getList());
