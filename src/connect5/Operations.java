@@ -12,6 +12,7 @@ import servent.SocketUtils;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
@@ -22,6 +23,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Operations implements OperationsAbstract {
 
     Socket socket;
+    String info;
 
     @Override
     public int[] init(String player1, String player2, int row, int col, int tokens, int times) {
@@ -175,31 +177,19 @@ public class Operations implements OperationsAbstract {
 
                             notifyAddress = pair.getValue().toString().split(":");
 
-                            if (!ServentListener.isPortInUse(Integer.parseInt(notifyAddress[1]))) {
-                                while (true) {
-                                    try {
-                                        socket = new Socket(notifyAddress[0], Integer.parseInt(notifyAddress[1]));
+                            // Create socket
+                            try {
+                                info = Storage.NOTIFY_ALL + " " +
+                                        Storage.WIN_CHILD + " " +
+                                        Methods.getAddress() + " " +
+                                        ServentSingleton.getInstance().getId() + " " +
+                                        ServentSingleton.getInstance().getIzigravanje() + " " +
+                                        crni + ":" + beli + " " +
+                                        totalTime;
 
-                                        SocketUtils.writeLine(
-                                                socket,
-                                                Storage.NOTIFY_ALL + " " +
-                                                        Storage.WIN_CHILD + " " +
-                                                        socket.getInetAddress().getHostAddress() + ":" +
-                                                        ServentListener.LISTENER_PORT + " " +
-                                                        ServentSingleton.getInstance().getId() + " " +
-                                                        ServentSingleton.getInstance().getIzigravanje() + " " +
-                                                        crni + ":" + beli + " " +
-                                                        totalTime
-                                        );
-                                        break;
-                                    } catch (SocketException e) {
-                                        System.out.println("SocketException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
-                                    } catch (IOException e) {
-                                        System.out.println("IOException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
-                                    }
-                                }
-                            } else {
-                                System.out.println("Can't connect to : " + notifyAddress[0] + ":" + notifyAddress[1]);
+                                ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
+                            } catch (UnknownHostException e) {
+                                e.printStackTrace();
                             }
                         } else {
                             // Ako je na redu parent, javi
@@ -210,31 +200,19 @@ public class Operations implements OperationsAbstract {
                                 notifyAddress = pair.getValue().toString().split(":");
                             }
 
-                            if (!ServentListener.isPortInUse(Integer.parseInt(notifyAddress[1]))) {
-                                while (true) {
-                                    try {
-                                        socket = new Socket(notifyAddress[0], Integer.parseInt(notifyAddress[1]));
+                            // Create socket
+                            try {
+                                info = Storage.NOTIFY_ALL + " " +
+                                        Storage.WIN + " " +
+                                        Methods.getAddress()+ " " +
+                                        ServentSingleton.getInstance().getId() + " " +
+                                        ServentSingleton.getInstance().getIzigravanje() + " " +
+                                        crni + ":" + beli + " " +
+                                        totalTime;
 
-                                        SocketUtils.writeLine(
-                                                socket,
-                                                Storage.NOTIFY_ALL + " " +
-                                                        Storage.WIN + " " +
-                                                        socket.getInetAddress().getHostAddress() + ":" +
-                                                        ServentListener.LISTENER_PORT + " " +
-                                                        ServentSingleton.getInstance().getId() + " " +
-                                                        ServentSingleton.getInstance().getIzigravanje() + " " +
-                                                        crni + ":" + beli + " " +
-                                                        totalTime
-                                        );
-                                        break;
-                                    } catch (SocketException e) {
-                                        System.out.println("SocketException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
-                                    } catch (IOException e) {
-                                        System.out.println("IOException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
-                                    }
-                                }
-                            } else {
-                                System.out.println("Can't connect to : " + notifyAddress[0] + ":" + notifyAddress[1]);
+                                ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
+                            } catch (UnknownHostException e) {
+                                e.printStackTrace();
                             }
                         }
                     }
