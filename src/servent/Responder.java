@@ -1407,14 +1407,14 @@ public class Responder implements Runnable{
 					String node1Id = Methods.getNode1(ServentSingleton.getInstance().getList());
 					String node2Id = Methods.getNode2(ServentSingleton.getInstance().getList());
 
-					isAvailableAddressNode1 = node1Id != null ? ServentSingleton.getInstance().getList().get(node1Id).split(":") : null;
-					isAvailableAddressNode2 = node2Id != null ? ServentSingleton.getInstance().getList().get(node2Id).split(":") : null;
+					isAvailableAddressNode1 = node1Id != null && ServentSingleton.getInstance().getList().containsKey(node1Id) ? ServentSingleton.getInstance().getList().get(node1Id).split(":") : null;
+					isAvailableAddressNode2 = node2Id != null && ServentSingleton.getInstance().getList().containsKey(node2Id) ? ServentSingleton.getInstance().getList().get(node2Id).split(":") : null;
 
 					// if NODE_2 exist and is NOT alive
-					if (node2Id != null && ServentListener.isDead(isAvailableAddressNode2[0], Integer.parseInt(isAvailableAddressNode2[1]))) {
+					if (node2Id != null && isAvailableAddressNode2 != null && ServentListener.isDead(isAvailableAddressNode2[0], Integer.parseInt(isAvailableAddressNode2[1]))) {
 
 						// if NODE_1 exist and is NOT alive
-						if (node1Id != null && ServentListener.isDead(isAvailableAddressNode1[0], Integer.parseInt(isAvailableAddressNode1[1]))) {
+						if (node1Id != null && isAvailableAddressNode1 != null && ServentListener.isDead(isAvailableAddressNode1[0], Integer.parseInt(isAvailableAddressNode1[1]))) {
 
 							System.out.println("Node : 1 [DEAD]" + isAvailableAddressNode1[0] + ":" + isAvailableAddressNode1[1]);
 							System.out.println("Node : 2 [DEAD]" + isAvailableAddressNode2[0] + ":" + isAvailableAddressNode2[1]);
@@ -1430,7 +1430,7 @@ public class Responder implements Runnable{
 							freeFieldId = ServentSingleton.getInstance().getId();
 							freeFieldNumber = 2;
 
-						} else {
+						} else if (isAvailableAddressNode2 != null) {
 							System.out.println("Node : 2 [DEAD]" + isAvailableAddressNode2[0] + ":" + isAvailableAddressNode2[1]);
 
 							// Set Servant
@@ -1448,7 +1448,7 @@ public class Responder implements Runnable{
 							freeFieldId = ServentSingleton.getInstance().getId();
 							freeFieldNumber = 1;
 						}
-					} else if (node1Id != null && ServentListener.isDead(isAvailableAddressNode1[0], Integer.parseInt(isAvailableAddressNode1[1]))) {
+					} else if (node1Id != null && isAvailableAddressNode1 != null && ServentListener.isDead(isAvailableAddressNode1[0], Integer.parseInt(isAvailableAddressNode1[1]))) {
 						// if NODE_1 exist and is NOT alive
 
 						System.out.println("Node : 1 [DEAD]" + isAvailableAddressNode1[0] + ":" + isAvailableAddressNode1[1]);
@@ -1475,9 +1475,9 @@ public class Responder implements Runnable{
 
 							if (Methods.isLocalParent(pair.getKey().toString()) && !Methods.isGlobalParent(pair.getKey().toString()) && !pair.getKey().toString().equals(ServentSingleton.getInstance().getId())) {
 
-								isAvailableAddress = ServentSingleton.getInstance().getList().get(pair.getKey()).split(" ")[0].split(":");
+								isAvailableAddress = ServentSingleton.getInstance().getList().containsKey(pair.getKey()) ? ServentSingleton.getInstance().getList().get(pair.getKey()).split(" ")[0].split(":") : null;
 
-								if (ServentListener.isDead(isAvailableAddress[0], Integer.parseInt(isAvailableAddress[1]))) {
+								if (isAvailableAddress != null && ServentListener.isDead(isAvailableAddress[0], Integer.parseInt(isAvailableAddress[1]))) {
 
 									// Wait! Maybe is not DEAD!!!
 
@@ -1495,6 +1495,7 @@ public class Responder implements Runnable{
 
 										// Set Servant
 										// Update map
+										System.out.println("loseeeee");
 										ServentSingleton.getInstance().getList().remove(pair.getKey());
 
 										try {
@@ -1522,14 +1523,14 @@ public class Responder implements Runnable{
 					String parentId = ServentSingleton.getInstance().getId().substring(0, ServentSingleton.getInstance().getId().length() - 1) + "0";
 					String node2Id = Methods.getNode2(ServentSingleton.getInstance().getList());
 
-					isAvailableAddressParent = parentId != null ? ServentSingleton.getInstance().getList().get(parentId).split(":") : null;
-					isAvailableAddressNode2 = node2Id != null ? ServentSingleton.getInstance().getList().get(node2Id).split(":") : null;
+					isAvailableAddressParent = parentId != null && ServentSingleton.getInstance().getList().containsKey(parentId) ? ServentSingleton.getInstance().getList().get(parentId).split(":") : null;
+					isAvailableAddressNode2 = node2Id != null && ServentSingleton.getInstance().getList().containsKey(node2Id) ? ServentSingleton.getInstance().getList().get(node2Id).split(":") : null;
 
 					// if Parent exist and is NOT alive
-					if (parentId != null && ServentListener.isDead(isAvailableAddressParent[0], Integer.parseInt(isAvailableAddressParent[1]))) {
+					if (parentId != null && isAvailableAddressParent != null && ServentListener.isDead(isAvailableAddressParent[0], Integer.parseInt(isAvailableAddressParent[1]))) {
 
 						// if NODE_2 exist and is NOT alive
-						if (node2Id != null && ServentListener.isDead(isAvailableAddressNode2[0], Integer.parseInt(isAvailableAddressNode2[1]))) {
+						if (node2Id != null && isAvailableAddressNode2 != null && ServentListener.isDead(isAvailableAddressNode2[0], Integer.parseInt(isAvailableAddressNode2[1]))) {
 
 							System.out.println("Parent : [DEAD]" + isAvailableAddressParent[0] + ":" + isAvailableAddressParent[1]);
 							System.out.println("Node : 2 [DEAD]" + isAvailableAddressNode2[0] + ":" + isAvailableAddressNode2[1]);
@@ -1552,7 +1553,7 @@ public class Responder implements Runnable{
 							freeFieldAddress = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId()).split(":");
 							freeFieldId = ServentSingleton.getInstance().getId();
 							freeFieldNumber = 2;
-						} else {
+						} else if (isAvailableAddressParent != null) {
 
 							System.out.println("Parent : [DEAD]" + isAvailableAddressParent[0] + ":" + isAvailableAddressParent[1]);
 
@@ -1584,14 +1585,18 @@ public class Responder implements Runnable{
 					String parentId = ServentSingleton.getInstance().getId().substring(0, ServentSingleton.getInstance().getId().length() - 1) + "0";
 					String node1Id = Methods.getNode1(ServentSingleton.getInstance().getList());
 
-					isAvailableAddressParent = parentId != null ? ServentSingleton.getInstance().getList().get(parentId).split(":") : null;
-					isAvailableAddressNode1 = node1Id != null ? ServentSingleton.getInstance().getList().get(node1Id).split(":") : null;
+					System.out.println(parentId);
+					System.out.println(ServentSingleton.getInstance().getList());
+					System.out.println(ServentSingleton.getInstance().getList().get(parentId));
+
+					isAvailableAddressParent = parentId != null && ServentSingleton.getInstance().getList().containsKey(parentId) ? ServentSingleton.getInstance().getList().get(parentId).split(":") : null;
+					isAvailableAddressNode1 = node1Id != null && ServentSingleton.getInstance().getList().containsKey(node1Id) ? ServentSingleton.getInstance().getList().get(node1Id).split(":") : null;
 
 					// if Parent exist and is NOT alive
-					if (node1Id != null && ServentListener.isDead(isAvailableAddressNode1[0], Integer.parseInt(isAvailableAddressNode1[1]))) {
+					if (node1Id != null && isAvailableAddressNode1 != null && ServentListener.isDead(isAvailableAddressNode1[0], Integer.parseInt(isAvailableAddressNode1[1]))) {
 
 						// if NODE_2 exist and is NOT alive
-						if (parentId != null && ServentListener.isDead(isAvailableAddressParent[0], Integer.parseInt(isAvailableAddressParent[1]))) {
+						if (parentId != null && isAvailableAddressParent != null && ServentListener.isDead(isAvailableAddressParent[0], Integer.parseInt(isAvailableAddressParent[1]))) {
 
 							System.out.println("Parent : [DEAD]" + isAvailableAddressParent[0] + ":" + isAvailableAddressParent[1]);
 							System.out.println("Node : 1 [DEAD]" + isAvailableAddressNode1[0] + ":" + isAvailableAddressNode1[1]);
@@ -1615,7 +1620,7 @@ public class Responder implements Runnable{
 							freeFieldId = ServentSingleton.getInstance().getId();
 							freeFieldNumber = 2;
 						}
-					} else if(parentId != null && ServentListener.isDead(isAvailableAddressParent[0], Integer.parseInt(isAvailableAddressParent[1]))) {
+					} else if(parentId != null && isAvailableAddressParent != null && ServentListener.isDead(isAvailableAddressParent[0], Integer.parseInt(isAvailableAddressParent[1]))) {
 
 						// if NODE_2 exist and is NOT alive
 
