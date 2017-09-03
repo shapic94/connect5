@@ -78,10 +78,15 @@ public class ServentListener implements Runnable {
 				while (true) {
 					try {
 						Socket socket = new Socket(ip, Integer.parseInt(port));
-						SocketUtils.writeLine(socket, info);
-
+						if (!info.equals("info")) {
+							SocketUtils.writeLine(socket, info);
+						} else {
+							socket.close();
+						}
 						if (cantConnect) {
-							System.out.println("Connect to : " + ip + ":" + port);
+							System.out.println("Not first connect to : " + ip + ":" + port);
+						} else {
+							System.out.println("First connect to : " + ip + ":" + port);
 						}
 						breakDead = false;
 						break;
@@ -96,5 +101,6 @@ public class ServentListener implements Runnable {
 				System.out.println("Can't connect to : " + ip + ":" + port);
 			}
 		}
+
 	}
 }
