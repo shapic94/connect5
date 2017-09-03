@@ -1,5 +1,8 @@
 package servent;
+import global.Storage;
+
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -65,5 +68,24 @@ public class ServentListener implements Runnable {
 		}
 
 		return result;
+	}
+
+	public static void createSocket(String ip, String port, String info) {
+		if (!ServentListener.isDead(ip, Integer.parseInt(port))) {
+			while (true) {
+				try {
+					Socket socket = new Socket(ip, Integer.parseInt(port));
+
+					SocketUtils.writeLine(socket, info);
+					break;
+				} catch (SocketException e) {
+					System.out.println("SocketException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
+				} catch (IOException e) {
+					System.out.println("IOException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
+				}
+			}
+		} else {
+			System.out.println("Can't connect to : " + ip + ":" + port);
+		}
 	}
 }

@@ -13,7 +13,7 @@ public class Storage {
     // Bootstrap & servants communication
 
     // Server port
-    public static final String BOOTSTRAP_IP = "127.0.0.1";
+    public static final String BOOTSTRAP_IP = "192.168.40.156";
     public static final int BOOTSTRAP_PORT = 1234;
 
     // New Node ---- > Server
