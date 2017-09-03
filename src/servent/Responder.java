@@ -80,16 +80,10 @@ public class Responder implements Runnable{
 						ServentSingleton.getInstance().setIzigravanje("0");
 
 						// CIRCLE CHECK
-						try {
-							socket = new Socket(ip, Integer.parseInt(port));
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
+						// Create socket
+						info = Storage.CIRCLE_CHECK + " test 123123:3123";
+						ServentListener.createSocket(ip, port, info);
 
-						SocketUtils.writeLine(
-								socket,
-								Storage.CIRCLE_CHECK + " test 123123:3123"
-						);
 
 						// Show id
 						System.out.println("Id : " + ServentSingleton.getInstance().getId());
@@ -668,16 +662,9 @@ public class Responder implements Runnable{
 							ServentSingleton.getInstance().setIzigravanje("0");
 
 							// CIRCLE CHECK
-							try {
-								socket = new Socket(ip, ServentListener.LISTENER_PORT);
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-
-							SocketUtils.writeLine(
-									socket,
-									Storage.CIRCLE_CHECK + " test 123123:3123"
-							);
+							// Create socket
+							info = Storage.CIRCLE_CHECK + " test 123123:3123";
+							ServentListener.createSocket(ip, Integer.toString(ServentListener.LISTENER_PORT), info);
 						}
 
 						// Show id
@@ -858,16 +845,9 @@ public class Responder implements Runnable{
 							ServentSingleton.getInstance().setIzigravanje("0");
 
 							// CIRCLE CHECK
-							try {
-								socket = new Socket(ip, ServentListener.LISTENER_PORT);
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-
-							SocketUtils.writeLine(
-									socket,
-									Storage.CIRCLE_CHECK + " test 123123:3123"
-							);
+							// Create socket
+							info = Storage.CIRCLE_CHECK + " test 123123:3123";
+							ServentListener.createSocket(ip, Integer.toString(ServentListener.LISTENER_PORT), info);
 
 						} else {
 							// If notify old node
@@ -1696,7 +1676,6 @@ public class Responder implements Runnable{
 
 				// Create socket
 				info = Storage.CIRCLE_CHECK + " test 123123:3123";
-
 				ServentListener.createSocket(addressOfParent[0], addressOfParent[1], info);
 
 				break;
