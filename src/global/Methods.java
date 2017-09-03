@@ -1,6 +1,7 @@
 package global;
 
 import servent.ServentListener;
+import servent.ServentSingleton;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -523,8 +524,14 @@ public class Methods {
         ) + " - " + loadTime + " ms");
     }
 
-    public static void printInfo() {
+    public static void printInfo() throws UnknownHostException {
+        // Show id
+        System.out.println("Id : " + ServentSingleton.getInstance().getId() + " " + getAddress());
 
+        // Show map
+        System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
+
+        System.out.println("--------------------------------------------------");
     }
 
     public static String getIp() throws UnknownHostException {

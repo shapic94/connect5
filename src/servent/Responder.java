@@ -93,13 +93,8 @@ public class Responder implements Runnable{
 						}
 
 
-						// Show id
-						System.out.println("Id : " + ServentSingleton.getInstance().getId());
-
-						// Show map
-						System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
-
-						System.out.println("--------------------------------------------------");
+						// Print Info
+						try { Methods.printInfo(); } catch (UnknownHostException e) { e.printStackTrace(); }
 						break;
 					case "NODE":
 
@@ -168,13 +163,8 @@ public class Responder implements Runnable{
 										}
 									}
 
-									// Show id
-									System.out.println("Id : " + ServentSingleton.getInstance().getId());
-
-									// Show map
-									System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
-
-									System.out.println("--------------------------------------------------");
+									// Print Info
+									try { Methods.printInfo(); } catch (UnknownHostException e) { e.printStackTrace(); }
 								} else {
 
 									String[] hasFreeParent = Methods.hasFreeParent(ServentSingleton.getInstance().getList());
@@ -221,13 +211,8 @@ public class Responder implements Runnable{
 											ServentListener.createSocket(node2Address[0], node2Address[1], info);
 										}
 
-										// Show id
-										System.out.println("Id : " + ServentSingleton.getInstance().getId());
-
-										// Show map
-										System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
-
-										System.out.println("--------------------------------------------------");
+										// Print Info
+										try { Methods.printInfo(); } catch (UnknownHostException e) { e.printStackTrace(); }
 									} else {
 										// If not, create new parent
 
@@ -296,13 +281,8 @@ public class Responder implements Runnable{
 											}
 										}
 
-										// Show id
-										System.out.println("Id : " + ServentSingleton.getInstance().getId());
-
-										// Show map
-										System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
-
-										System.out.println("--------------------------------------------------");
+										// Print Info
+										try { Methods.printInfo(); } catch (UnknownHostException e) { e.printStackTrace(); }
 									}
 								}
 
@@ -443,13 +423,8 @@ public class Responder implements Runnable{
 									}
 								}
 
-								// Show id
-								System.out.println("Id : " + ServentSingleton.getInstance().getId());
-
-								// Show map
-								System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
-
-								System.out.println("--------------------------------------------------");
+								// Print Info
+								try { Methods.printInfo(); } catch (UnknownHostException e) { e.printStackTrace(); }
 							} else {
 
 								String[] hasFreeParent = Methods.hasFreeParent(ServentSingleton.getInstance().getList());
@@ -495,14 +470,8 @@ public class Responder implements Runnable{
 										ServentListener.createSocket(node2Address[0], node2Address[1], info);
 									}
 
-									// Show id
-									System.out.println("Id : " + ServentSingleton.getInstance().getId());
-
-									// Show map
-									System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
-
-									System.out.println("--------------------------------------------------");
-
+									// Print Info
+									try { Methods.printInfo(); } catch (UnknownHostException e) { e.printStackTrace(); }
 								} else {
 									// If not, create new parent
 									String parentId = "1." + ServentSingleton.getInstance().getId().replace("1", "0");
@@ -570,13 +539,8 @@ public class Responder implements Runnable{
 										}
 									}
 
-									// Show id
-									System.out.println("Id : " + ServentSingleton.getInstance().getId());
-
-									// Show map
-									System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
-
-									System.out.println("--------------------------------------------------");
+									// Print Info
+									try { Methods.printInfo(); } catch (UnknownHostException e) { e.printStackTrace(); }
 								}
 							}
 						} else {
@@ -659,13 +623,8 @@ public class Responder implements Runnable{
 							}
 						}
 
-						// Show id
-						System.out.println("Id : " + ServentSingleton.getInstance().getId());
-
-						// Show map
-						System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
-
-						System.out.println("--------------------------------------------------");
+						// Print Info
+						try { Methods.printInfo(); } catch (UnknownHostException e) { e.printStackTrace(); }
 						break;
 					case "FREE_FIELD":
 						String childParentId = message[3];
@@ -767,13 +726,8 @@ public class Responder implements Runnable{
 								}
 							}
 
-							// Show id
-							System.out.println("Id : " + ServentSingleton.getInstance().getId());
-
-							// Show map
-							System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
-
-							System.out.println("--------------------------------------------------");
+							// Print Info
+							try { Methods.printInfo(); } catch (UnknownHostException e) { e.printStackTrace(); }
 						}
 
 						break;
@@ -828,13 +782,8 @@ public class Responder implements Runnable{
 							ServentSingleton.getInstance().setList(Methods.createHashMap(Methods.parseHashMap(map)));
 						}
 
-						// Show id
-						System.out.println("Id : " + ServentSingleton.getInstance().getId());
-
-						// Show map
-						System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
-
-						System.out.println("--------------------------------------------------");
+						// Print Info
+						try { Methods.printInfo(); } catch (UnknownHostException e) { e.printStackTrace(); }
 						break;
 				}
 				break;
@@ -892,13 +841,8 @@ public class Responder implements Runnable{
 							}
 						}
 
-						// Show id
-						System.out.println("Id : " + ServentSingleton.getInstance().getId());
-
-						// Show map
-						System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
-
-						System.out.println("--------------------------------------------------");
+						// Print Info
+						try { Methods.printInfo(); } catch (UnknownHostException e) { e.printStackTrace(); }
 						break;
 					case "ID_MAP":
 						// CHILD NOTIFY
@@ -911,13 +855,8 @@ public class Responder implements Runnable{
 						// Set new map from parent
 						ServentSingleton.getInstance().setList(Methods.createHashMap(Methods.parseHashMap(map)));
 
-						// Show id
-						System.out.println("Id : " + ServentSingleton.getInstance().getId());
-
-						// Show map
-						System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
-
-						System.out.println("--------------------------------------------------");
+						// Print Info
+						try { Methods.printInfo(); } catch (UnknownHostException e) { e.printStackTrace(); }
 						break;
 					case "ID_DOWN":
 						// DECREASE IDS
@@ -977,14 +916,8 @@ public class Responder implements Runnable{
 							}
 						}
 
-						// Show id
-						System.out.println("Id : " + ServentSingleton.getInstance().getId());
-
-						// Show map
-						System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
-
-						System.out.println("--------------------------------------------------");
-
+						// Print Info
+						try { Methods.printInfo(); } catch (UnknownHostException e) { e.printStackTrace(); }
 						break;
 
 					case "ID_DOWN_MAP":
@@ -1005,13 +938,8 @@ public class Responder implements Runnable{
 						// Set new map from parent
 						ServentSingleton.getInstance().setList(Methods.createHashMap(Methods.parseHashMap(mapReduce)));
 
-						// Show id
-						System.out.println("Id : " + ServentSingleton.getInstance().getId());
-
-						// Show map
-						System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
-
-						System.out.println("--------------------------------------------------");
+						// Print Info
+						try { Methods.printInfo(); } catch (UnknownHostException e) { e.printStackTrace(); }
 						break;
 					case "GAME":
 
