@@ -85,8 +85,6 @@ public class ServentListener implements Runnable {
 						}
 						if (cantConnect) {
 							System.out.println("Not first connect to : " + ip + ":" + port);
-						} else {
-							System.out.println("First connect to : " + ip + ":" + port);
 						}
 						breakDead = false;
 						break;
