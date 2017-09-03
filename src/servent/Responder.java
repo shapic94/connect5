@@ -1017,7 +1017,8 @@ public class Responder implements Runnable{
 
 						// Check if new game started!
 						if (!ServentSingleton.getInstance().getIzigravanje().equals(message[5])) {
-							System.out.println("NOVA IGRA");
+							System.out.println("NOVA IGRA ALL");
+							System.out.println("--------------------------------------------------");
 							ServentSingleton.getInstance().setResultPlayer1(0);
 							ServentSingleton.getInstance().setResultPlayer2(0);
 							ServentSingleton.getInstance().setLocalResultPlayer1(0);
@@ -1149,7 +1150,8 @@ public class Responder implements Runnable{
 							ServentSingleton.getInstance().setResultPlayer1(ServentSingleton.getInstance().getResultPlayer1() + Integer.parseInt(winnersChildParent[0]));
 							ServentSingleton.getInstance().setResultPlayer2(ServentSingleton.getInstance().getResultPlayer2() + Integer.parseInt(winnersChildParent[1]));
 						} else {
-							System.out.println("NOVA IGRA");
+							System.out.println("NOVA IGRA WIN");
+							System.out.println("--------------------------------------------------");
 							ServentSingleton.getInstance().setResultPlayer1(Integer.parseInt(winnersChildParent[0]));
 							ServentSingleton.getInstance().setResultPlayer2(Integer.parseInt(winnersChildParent[1]));
 						}
@@ -1270,7 +1272,7 @@ public class Responder implements Runnable{
 							ServentSingleton.getInstance().setResultPlayer1(ServentSingleton.getInstance().getResultPlayer1() + Integer.parseInt(winnersChildNotify[0]));
 							ServentSingleton.getInstance().setResultPlayer2(ServentSingleton.getInstance().getResultPlayer2() + Integer.parseInt(winnersChildNotify[1]));
 						} else {
-							System.out.println("NOVA IGRA");
+							System.out.println("NOVA IGRA WIN CHILD");
 							System.out.println("--------------------------------------------------");
 							ServentSingleton.getInstance().setIzigravanje(message[4]);
 							ServentSingleton.getInstance().setResultPlayer1(Integer.parseInt(winnersChildNotify[0]));
