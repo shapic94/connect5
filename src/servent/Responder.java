@@ -1401,9 +1401,9 @@ public class Responder implements Runnable{
 				String freeFieldId = null;
 				int freeFieldNumber = -1;
 
-				System.out.println("CIRCLE_CHECK " + ip + ":" + port);
+
 				// if it is parent
-				if (Methods.isLocalParent(ServentSingleton.getInstance().getId())) {
+				if (ServentSingleton.getInstance().getId() != null && Methods.isLocalParent(ServentSingleton.getInstance().getId())) {
 					String node1Id = Methods.getNode1(ServentSingleton.getInstance().getList());
 					String node2Id = Methods.getNode2(ServentSingleton.getInstance().getList());
 
@@ -1516,7 +1516,7 @@ public class Responder implements Runnable{
 							}
 						}
 					}
-				} else if (Methods.isNode1(ServentSingleton.getInstance().getId())) {
+				} else if (ServentSingleton.getInstance().getId() != null && Methods.isNode1(ServentSingleton.getInstance().getId())) {
 					// If it is NODE_1
 
 					String parentId = ServentSingleton.getInstance().getId().substring(0, ServentSingleton.getInstance().getId().length() - 1) + "0";
@@ -1578,7 +1578,7 @@ public class Responder implements Runnable{
 							freeFieldNumber = 1;
 						}
 					}
-				} else if (Methods.isNode2(ServentSingleton.getInstance().getId())) {
+				} else if (ServentSingleton.getInstance().getId() != null && Methods.isNode2(ServentSingleton.getInstance().getId())) {
 					// If it is NODE_2
 
 					String parentId = ServentSingleton.getInstance().getId().substring(0, ServentSingleton.getInstance().getId().length() - 1) + "0";
