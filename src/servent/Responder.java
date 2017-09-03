@@ -1722,23 +1722,18 @@ public class Responder implements Runnable{
 
 				// obavesti sve koje treba
 				if (freeFieldAddress != null && freeFieldId != null && freeFieldNumber != -1) {
-					if (!ServentListener.isDead(freeFieldAddress[0], Integer.parseInt(freeFieldAddress[1]))) {
-						System.out.println("NOTIFY " + freeFieldAddress[0] + ":" + freeFieldAddress[1]);
-						try {
-							socket = new Socket(freeFieldAddress[0], Integer.parseInt(freeFieldAddress[1]));
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
 
-						SocketUtils.writeLine(
-								socket,
-								Storage.NOTIFY_PARENT + " " +
-										Storage.FREE_FIELD + " " +
-										socket.getInetAddress().getHostAddress() + ":" +
-										ServentListener.LISTENER_PORT + " " +
-										freeFieldId + " " +
-										freeFieldNumber
-						);
+					// Create socket
+					try {
+						info = Storage.NOTIFY_PARENT + " " +
+								Storage.FREE_FIELD + " " +
+								InetAddress.getLocalHost().getHostAddress() + ":" + ServentListener.LISTENER_PORT + " " +
+								freeFieldId + " " +
+								freeFieldNumber;
+
+						ServentListener.createSocket(freeFieldAddress[0], freeFieldAddress[1], info);
+					} catch (UnknownHostException e) {
+						e.printStackTrace();
 					}
 				}
 
@@ -1751,18 +1746,12 @@ public class Responder implements Runnable{
 
 				// proveri opet da li neko fali, ZA SVAKOG CVORA SE PROLAZI
 				String[] addressOfParent = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId()).split(":");
-				if (!ServentListener.isDead(addressOfParent[0], Integer.parseInt(addressOfParent[1]))) {
-					try {
-						socket = new Socket(addressOfParent[0], Integer.parseInt(addressOfParent[1]));
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
 
-					SocketUtils.writeLine(
-							socket,
-							Storage.CIRCLE_CHECK + " test 123123:3123"
-					);
-				}
+				// Create socket
+				info = Storage.CIRCLE_CHECK + " test 123123:3123";
+
+				ServentListener.createSocket(addressOfParent[0], addressOfParent[1], info);
+
 				break;
 			default:
 				System.out.println("Wrong communication.");
