@@ -4,6 +4,7 @@ import global.Storage;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Properties;
 
@@ -55,8 +56,8 @@ public class StartServent {
 					//portCvora = scan.nextInt();
 					if(novi==1) {
 						Socket s = new Socket(Storage.BOOTSTRAP_IP, Storage.BOOTSTRAP_PORT);
-						SocketUtils.writeLine(s, Storage.NEW + " " + s.getInetAddress().getHostAddress() + ":" + myPort);
-						System.out.println(Storage.NEW + " " + myPort);
+						SocketUtils.writeLine(s, Storage.NEW + " " + InetAddress.getLocalHost().getHostAddress() + ":" + myPort);
+						System.out.println(Storage.NEW + " " + InetAddress.getLocalHost().getHostAddress() + ":" + myPort);
 						novi = 0;
 					}
 				}
