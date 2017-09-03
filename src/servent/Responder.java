@@ -606,7 +606,6 @@ public class Responder implements Runnable{
 							String node2IdA = Methods.getNode2(ServentSingleton.getInstance().getList());
 
 							if (node1IdA != null) {
-//								System.out.println("node 1");
 								String[] node1Address = ServentSingleton.getInstance().getList().get(node1IdA).split(":");
 
 								if (!ServentListener.isDead(node1Address[0], Integer.parseInt(node1Address[1]))) {
@@ -628,7 +627,6 @@ public class Responder implements Runnable{
 							}
 
 							if (node2IdA != null) {
-//								System.out.println("node 2");
 								String[] node2Address = ServentSingleton.getInstance().getList().get(node2IdA).split(":");
 
 								if (!ServentListener.isDead(node2Address[0], Integer.parseInt(node2Address[1]))) {
@@ -702,7 +700,6 @@ public class Responder implements Runnable{
 
 
 							if (node1Id != null) {
-//								System.out.println("node 1");
 								String[] node1Address = ServentSingleton.getInstance().getList().get(node1Id).split(":");
 
 								if (!ServentListener.isDead(node1Address[0], Integer.parseInt(node1Address[1]))) {
@@ -724,7 +721,6 @@ public class Responder implements Runnable{
 							}
 
 							if (node2Id != null) {
-//								System.out.println("node 2");
 								String[] node2Address = ServentSingleton.getInstance().getList().get(node2Id).split(":");
 
 								if (!ServentListener.isDead(node2Address[0], Integer.parseInt(node2Address[1]))) {
@@ -855,7 +851,6 @@ public class Responder implements Runnable{
 							// CIRCLE CHECK
 							// Create socket
 							info = Storage.CIRCLE_CHECK + " test 123123:3123";
-							System.out.println(ip + " : " +ServentListener.LISTENER_PORT);
 							try {
 								ServentListener.createSocket(InetAddress.getLocalHost().getHostAddress(), Integer.toString(ServentListener.LISTENER_PORT), info);
 							} catch (UnknownHostException e) {
@@ -1414,8 +1409,6 @@ public class Responder implements Runnable{
 				String freeFieldId = null;
 				int freeFieldNumber = -1;
 
-				System.out.println(ServentSingleton.getInstance().getId() + " - " + Methods.isNode1(ServentSingleton.getInstance().getId()));
-
 				// if it is parent
 				if (ServentSingleton.getInstance().getId() != null && Methods.isLocalParent(ServentSingleton.getInstance().getId())) {
 					String node1Id = Methods.getNode1(ServentSingleton.getInstance().getList());
@@ -1540,8 +1533,6 @@ public class Responder implements Runnable{
 					isAvailableAddressParent = parentId != null && ServentSingleton.getInstance().getList().containsKey(parentId) ? ServentSingleton.getInstance().getList().get(parentId).split(":") : null;
 					isAvailableAddressNode2 = node2Id != null && ServentSingleton.getInstance().getList().containsKey(node2Id) ? ServentSingleton.getInstance().getList().get(node2Id).split(":") : null;
 
-					System.out.println(ServentListener.isDead(isAvailableAddressParent[0], Integer.parseInt(isAvailableAddressParent[1])));
-					System.out.println(ServentListener.isDead(isAvailableAddressNode2[0], Integer.parseInt(isAvailableAddressNode2[1])));
 					// if Parent exist and is NOT alive
 					if (parentId != null && isAvailableAddressParent != null && ServentListener.isDead(isAvailableAddressParent[0], Integer.parseInt(isAvailableAddressParent[1]))) {
 
@@ -1600,10 +1591,6 @@ public class Responder implements Runnable{
 
 					String parentId = ServentSingleton.getInstance().getId().substring(0, ServentSingleton.getInstance().getId().length() - 1) + "0";
 					String node1Id = Methods.getNode1(ServentSingleton.getInstance().getList());
-
-					System.out.println(parentId);
-					System.out.println(ServentSingleton.getInstance().getList());
-					System.out.println(ServentSingleton.getInstance().getList().get(parentId));
 
 					isAvailableAddressParent = parentId != null && ServentSingleton.getInstance().getList().containsKey(parentId) ? ServentSingleton.getInstance().getList().get(parentId).split(":") : null;
 					isAvailableAddressNode1 = node1Id != null && ServentSingleton.getInstance().getList().containsKey(node1Id) ? ServentSingleton.getInstance().getList().get(node1Id).split(":") : null;
