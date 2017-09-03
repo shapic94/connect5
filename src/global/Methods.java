@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 public class Methods {
 
@@ -507,5 +508,14 @@ public class Methods {
 
     public static long loadTime(long oldLoadTime, long newLoadTime) {
         return (oldLoadTime + newLoadTime) / 2;
+    }
+
+    public static void printLoadTime(int player1, int player2, int times, long loadTime) {
+        long millis = ((times - (player1 + player2)) / Storage.TIMES_PER_SEC) * loadTime;
+        System.out.println(String.format("%d min, %d sec",
+        TimeUnit.MILLISECONDS.toMinutes(millis),
+        TimeUnit.MILLISECONDS.toSeconds(millis) -
+        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis))
+        ) + " - " + loadTime + " ms");
     }
 }

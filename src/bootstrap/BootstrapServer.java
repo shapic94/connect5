@@ -3,6 +3,7 @@ import global.Storage;
 import main.Main;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Vector;
@@ -13,7 +14,10 @@ public class BootstrapServer {
 
 		try {
 			// Create socket with
+//			ServerSocket ss = new ServerSocket(Storage.BOOTSTRAP_PORT);
 			ServerSocket ss = new ServerSocket(Storage.BOOTSTRAP_PORT);
+
+			System.out.println(InetAddress.getLocalHost().getHostAddress() + ":" + ss.getLocalPort());
 
 			// Bootstrap is working
 			System.out.println("Server started on port " + Storage.BOOTSTRAP_PORT);

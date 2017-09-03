@@ -4,6 +4,7 @@ import entity.Token;
 import global.Methods;
 import gui.Component;
 import global.Storage;
+import servent.Servent;
 import servent.ServentListener;
 import servent.ServentSingleton;
 import servent.SocketUtils;
@@ -157,11 +158,21 @@ public class Operations implements OperationsAbstract {
                 while (it.hasNext()) {
                     Map.Entry pair = (Map.Entry) it.next();
 
-                    // ne javljaj samom sebi
+                    // Ako je jedan od childa
+                    if (Methods.isNode1(ServentSingleton.getInstance().getId()) || Methods.isNode2(ServentSingleton.getInstance().getId())) {
+
+                        // Ako nije drugi child, ni njihov parent, ne moze
+                        if (!Methods.getLocalParent(ServentSingleton.getInstance().getId()).equals(pair.getKey().toString()) && !Methods.isNode1(pair.getKey().toString()) && !Methods.isNode2(pair.getKey().toString())) {
+                            continue;
+                        }
+                    }
+
+                    // Ne javljaj samom sebi
                     if (!pair.getKey().toString().equals(ServentSingleton.getInstance().getId())) {
 
-                        // javi childovima
+                        // Ako je na redu child, javi
                         if (Methods.isNode1(pair.getKey().toString()) || Methods.isNode2(pair.getKey().toString())) {
+
                             notifyAddress = pair.getValue().toString().split(":");
 
                             if (!ServentListener.isPortInUse(Integer.parseInt(notifyAddress[1]))) {
@@ -190,45 +201,8 @@ public class Operations implements OperationsAbstract {
                             } else {
                                 System.out.println("Can't connect to : " + notifyAddress[0] + ":" + notifyAddress[1]);
                             }
-                        } else if ((Methods.isNode1(ServentSingleton.getInstance().getId()) || Methods.isNode2(ServentSingleton.getInstance().getId()))) {
-                            if (pair.getKey().toString().equals(Methods.getLocalParent(ServentSingleton.getInstance().getId()))) {
-                                //javi parentu
-
-                                if (pair.getValue().toString().contains(" ")) {
-                                    notifyAddress = pair.getValue().toString().split(" ")[0].split(":");
-                                } else {
-                                    notifyAddress = pair.getValue().toString().split(":");
-                                }
-
-                                if (!ServentListener.isPortInUse(Integer.parseInt(notifyAddress[1]))) {
-                                    while (true) {
-                                        try {
-                                            socket = new Socket(notifyAddress[0], Integer.parseInt(notifyAddress[1]));
-
-                                            SocketUtils.writeLine(
-                                                    socket,
-                                                    Storage.NOTIFY_ALL + " " +
-                                                            Storage.WIN + " " +
-                                                            socket.getInetAddress().getHostAddress() + ":" +
-                                                            ServentListener.LISTENER_PORT + " " +
-                                                            ServentSingleton.getInstance().getId() + " " +
-                                                            ServentSingleton.getInstance().getIzigravanje() + " " +
-                                                            crni + ":" + beli + " " +
-                                                            totalTime
-                                            );
-                                            break;
-                                        } catch (SocketException e) {
-                                            System.out.println("SocketException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
-                                        } catch (IOException e) {
-                                            System.out.println("IOException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
-                                        }
-                                    }
-                                } else {
-                                    System.out.println("Can't connect to : " + notifyAddress[0] + ":" + notifyAddress[1]);
-                                }
-                            }
                         } else {
-                            //javi parentu
+                            // Ako je na redu parent, javi
 
                             if (pair.getValue().toString().contains(" ")) {
                                 notifyAddress = pair.getValue().toString().split(" ")[0].split(":");

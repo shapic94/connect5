@@ -23,6 +23,10 @@ public class Responder implements Runnable{
 	String nodeId;
 
 	Socket socket = null;
+	String[] isAvailableAddress;
+	String[] isAvailableAddressParent;
+	String[] isAvailableAddressNode1;
+	String[] isAvailableAddressNode2;
 
 
 	public Responder(Socket clientSocket) {
@@ -39,6 +43,11 @@ public class Responder implements Runnable{
 	public void run() {
 		// Read line
 		String line = SocketUtils.readLine(clientSocket);
+
+		// If line null, break
+		if (line == null) {
+			return;
+		}
 
 		// Split line
 		String[] message = line.split(" ");
@@ -715,7 +724,7 @@ public class Responder implements Runnable{
 //								System.out.println("node 1");
 								String[] node1Address = ServentSingleton.getInstance().getList().get(node1IdA).split(":");
 
-								if (!ServentListener.isPortInUse(Integer.parseInt(node1Address[1]))) {
+								if (!ServentListener.isDead(node1Address[0], Integer.parseInt(node1Address[1]))) {
 									try {
 										socket = new Socket(node1Address[0], Integer.parseInt(node1Address[1]));
 									} catch (IOException e) {
@@ -737,7 +746,7 @@ public class Responder implements Runnable{
 //								System.out.println("node 2");
 								String[] node2Address = ServentSingleton.getInstance().getList().get(node2IdA).split(":");
 
-								if (!ServentListener.isPortInUse(Integer.parseInt(node2Address[1]))) {
+								if (!ServentListener.isDead(node2Address[0], Integer.parseInt(node2Address[1]))) {
 									try {
 										socket = new Socket(node2Address[0], Integer.parseInt(node2Address[1]));
 									} catch (IOException e) {
@@ -814,7 +823,7 @@ public class Responder implements Runnable{
 //								System.out.println("node 1");
 								String[] node1Address = ServentSingleton.getInstance().getList().get(node1Id).split(":");
 
-								if (!ServentListener.isPortInUse(Integer.parseInt(node1Address[1]))) {
+								if (!ServentListener.isDead(node1Address[0], Integer.parseInt(node1Address[1]))) {
 									try {
 										socket = new Socket(node1Address[0], Integer.parseInt(node1Address[1]));
 									} catch (IOException e) {
@@ -836,7 +845,7 @@ public class Responder implements Runnable{
 //								System.out.println("node 2");
 								String[] node2Address = ServentSingleton.getInstance().getList().get(node2Id).split(":");
 
-								if (!ServentListener.isPortInUse(Integer.parseInt(node2Address[1]))) {
+								if (!ServentListener.isDead(node2Address[0], Integer.parseInt(node2Address[1]))) {
 									try {
 										socket = new Socket(node2Address[0], Integer.parseInt(node2Address[1]));
 									} catch (IOException e) {
@@ -869,7 +878,7 @@ public class Responder implements Runnable{
 											otherLocalParentAddress = pair.getValue().toString().split(":");
 										}
 
-										if (!ServentListener.isPortInUse(Integer.parseInt(otherLocalParentAddress[1]))) {
+										if (!ServentListener.isDead(otherLocalParentAddress[0], Integer.parseInt(otherLocalParentAddress[1]))) {
 											try {
 												socket = new Socket(otherLocalParentAddress[0], Integer.parseInt(otherLocalParentAddress[1]));
 											} catch (IOException e) {
@@ -1316,6 +1325,8 @@ public class Responder implements Runnable{
 						break;
 					case "WIN":
 
+//						System.out.println("[PARENT] Javio mi se: " + message[3] + ", sa " + message[5]);
+
 						String[] notifyAddress;
 						String[] winnersChildParent = message[5].split(":");
 
@@ -1327,37 +1338,43 @@ public class Responder implements Runnable{
 							ServentSingleton.getInstance().setResultPlayer1(Integer.parseInt(winnersChildParent[0]));
 							ServentSingleton.getInstance().setResultPlayer2(Integer.parseInt(winnersChildParent[1]));
 						}
-//						ServentSingleton.getInstance().setResultPlayer1(ServentSingleton.getInstance().getResultPlayer1() + Integer.parseInt(winnersChildParent[0]));
-//						ServentSingleton.getInstance().setResultPlayer2(ServentSingleton.getInstance().getResultPlayer2() + Integer.parseInt(winnersChildParent[1]));
+
+						// Print Time
+//						Methods.printLoadTime(ServentSingleton.getInstance().getResultPlayer1(), ServentSingleton.getInstance().getResultPlayer2(), ServentSingleton.getInstance().getTimes(), ServentSingleton.getInstance().getLoadTime());
 
 
-//						System.out.println("Ms : " + message[6]);
-//						System.out.println("Time end : " + ((ServentSingleton.getInstance().getTimes() - (ServentSingleton.getInstance().getResultPlayer1() + ServentSingleton.getInstance().getResultPlayer2())) / Storage.TIMES_PER_SEC) * Integer.parseInt(message[6]));
-						long millis = ((ServentSingleton.getInstance().getTimes() - (ServentSingleton.getInstance().getResultPlayer1() + ServentSingleton.getInstance().getResultPlayer2())) / Storage.TIMES_PER_SEC) * ServentSingleton.getInstance().getLoadTime();
-
-//						System.out.println(String.format("%d min, %d sec",
-//								TimeUnit.MILLISECONDS.toMinutes(millis),
-//								TimeUnit.MILLISECONDS.toSeconds(millis) -
-//										TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis))
-//						) + " - " + ServentSingleton.getInstance().getLoadTime() + " ms");
+						String caseWin;
+						String subcaseWin;
+						String addressWin;
+						String idWin;
+						String izigravanjeWin;
+						String gamesWin;
+						String timeWin;
 
 						Iterator itera = ServentSingleton.getInstance().getList().entrySet().iterator();
 						while (itera.hasNext()) {
 							Map.Entry pair = (Map.Entry) itera.next();
 
-							// ne vracaj nazad i ne salji samom sebi
+
+							// Ne javljaj samom sebi i onome od koga si dobio poruku
 							if (!pair.getKey().toString().equals(ServentSingleton.getInstance().getId()) && !pair.getKey().toString().equals(message[3])) {
 
-								// ako su node
-								if (Methods.isNode1(pair.getKey().toString()) || Methods.isNode2(pair.getKey().toString())) {
-									if (!(Methods.isNode1(message[3]) || Methods.isNode2(message[3]))) {
+								// Ako nisam od childa dobio poruku, smem i childovima
+								if (!Methods.isNode1(message[3]) && !Methods.isNode2(message[3])) {
+
+
+									if (Methods.isNode1(pair.getKey().toString()) || Methods.isNode2(pair.getKey().toString())) {
 										if (pair.getValue().toString().contains(" ")) {
 											notifyAddress = pair.getValue().toString().split(" ")[0].split(":");
 										} else {
 											notifyAddress = pair.getValue().toString().split(":");
 										}
 
-										if (!ServentListener.isPortInUse(Integer.parseInt(notifyAddress[1]))) {
+//										caseWin = Storage.NOTIFY_ALL;
+//										subcaseWin = Storage.WIN_CHILD;
+//										addressWin =
+
+										if (!ServentListener.isDead(notifyAddress[0], Integer.parseInt(notifyAddress[1]))) {
 											while (true) {
 												try {
 													socket = new Socket(notifyAddress[0], Integer.parseInt(notifyAddress[1]));
@@ -1383,16 +1400,57 @@ public class Responder implements Runnable{
 										} else {
 											System.out.println("Can't connect to : " + notifyAddress[0] + ":" + notifyAddress[1]);
 										}
-//										System.out.println("pozovi child! " + Integer.parseInt(notifyAddress[1]) + " " + message[3]);
+									} else {
+										if (pair.getValue().toString().contains(" ")) {
+											notifyAddress = pair.getValue().toString().split(" ")[0].split(":");
+										} else {
+											notifyAddress = pair.getValue().toString().split(":");
+										}
+
+										if (!ServentListener.isDead(notifyAddress[0], Integer.parseInt(notifyAddress[1]))) {
+											while (true) {
+												try {
+													socket = new Socket(notifyAddress[0], Integer.parseInt(notifyAddress[1]));
+
+													SocketUtils.writeLine(
+															socket,
+															Storage.NOTIFY_ALL + " " +
+																	Storage.WIN + " " +
+																	socket.getInetAddress().getHostAddress() + ":" +
+																	ServentListener.LISTENER_PORT + " " +
+																	ServentSingleton.getInstance().getId() + " " +
+																	ServentSingleton.getInstance().getIzigravanje() + " " +
+																	winnersChildParent[0] + ":" + winnersChildParent[1] + " " +
+																	message[6]
+													);
+													break;
+												} catch (SocketException e) {
+													System.out.println("SocketException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
+												} catch (IOException e) {
+													System.out.println("IOException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
+												}
+											}
+										} else {
+											System.out.println("Can't connect to : " + notifyAddress[0] + ":" + notifyAddress[1]);
+										}
 									}
+
 								} else {
+									// Ako sam dobio od childa poruku, ne javljam drugom childu
+
+
+									// Ako je na redu child, preskoci
+									if (Methods.isNode1(pair.getKey().toString()) || Methods.isNode2(pair.getKey().toString())) {
+										continue;
+									}
+
 									if (pair.getValue().toString().contains(" ")) {
 										notifyAddress = pair.getValue().toString().split(" ")[0].split(":");
 									} else {
 										notifyAddress = pair.getValue().toString().split(":");
 									}
 
-									if (!ServentListener.isPortInUse(Integer.parseInt(notifyAddress[1]))) {
+									if (!ServentListener.isDead(notifyAddress[0], Integer.parseInt(notifyAddress[1]))) {
 										while (true) {
 											try {
 												socket = new Socket(notifyAddress[0], Integer.parseInt(notifyAddress[1]));
@@ -1418,23 +1476,42 @@ public class Responder implements Runnable{
 									} else {
 										System.out.println("Can't connect to : " + notifyAddress[0] + ":" + notifyAddress[1]);
 									}
-
-//									System.out.println("pozovi parent! " + Integer.parseInt(notifyAddress[1]) + " " + message[3]);
 								}
 							}
 
+//							// here
+//							if (!ServentListener.isPortInUse(Integer.parseInt(notifyAddress[1]))) {
+//								while (true) {
+//									try {
+//										socket = new Socket(notifyAddress[0], Integer.parseInt(notifyAddress[1]));
+//
+//										SocketUtils.writeLine(
+//												socket,
+//												Storage.NOTIFY_ALL + " " +
+//														Storage.WIN + " " +
+//														socket.getInetAddress().getHostAddress() + ":" +
+//														ServentListener.LISTENER_PORT + " " +
+//														ServentSingleton.getInstance().getId() + " " +
+//														ServentSingleton.getInstance().getIzigravanje() + " " +
+//														winnersChildParent[0] + ":" + winnersChildParent[1] + " " +
+//														message[6]
+//										);
+//										break;
+//									} catch (SocketException e) {
+//										System.out.println("SocketException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
+//									} catch (IOException e) {
+//										System.out.println("IOException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
+//									}
+//								}
+//							} else {
+//								System.out.println("Can't connect to : " + notifyAddress[0] + ":" + notifyAddress[1]);
+//							}
 						}
 						break;
 					case "WIN_CHILD":
-//						System.out.println("Ms : " + message[6]);
 
-//						System.out.println("Time end : " + ((ServentSingleton.getInstance().getTimes() - (ServentSingleton.getInstance().getResultPlayer1() + ServentSingleton.getInstance().getResultPlayer2())) / Storage.TIMES_PER_SEC) * Integer.parseInt(message[6]));
-						long millis1 = ((ServentSingleton.getInstance().getTimes() - (ServentSingleton.getInstance().getResultPlayer1() + ServentSingleton.getInstance().getResultPlayer2())) / Storage.TIMES_PER_SEC) * ServentSingleton.getInstance().getLoadTime();
-//						System.out.println(String.format("%d min, %d sec",
-//								TimeUnit.MILLISECONDS.toMinutes(millis1),
-//								TimeUnit.MILLISECONDS.toSeconds(millis1) -
-//										TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis1))
-//						) + " - " + ServentSingleton.getInstance().getLoadTime() + " ms");
+						// Print Time
+//						Methods.printLoadTime(ServentSingleton.getInstance().getResultPlayer1(), ServentSingleton.getInstance().getResultPlayer2(), ServentSingleton.getInstance().getTimes(), ServentSingleton.getInstance().getLoadTime());
 
 						String[] winnersChildNotify = message[5].split(":");
 						if (ServentSingleton.getInstance().getIzigravanje().equals(message[4])) {
@@ -1462,14 +1539,17 @@ public class Responder implements Runnable{
 					String node1Id = Methods.getNode1(ServentSingleton.getInstance().getList());
 					String node2Id = Methods.getNode2(ServentSingleton.getInstance().getList());
 
+					isAvailableAddressNode1 = node1Id != null ? ServentSingleton.getInstance().getList().get(node1Id).split(":") : null;
+					isAvailableAddressNode2 = node2Id != null ? ServentSingleton.getInstance().getList().get(node2Id).split(":") : null;
+
 					// if NODE_2 exist and is NOT alive
-					if (node2Id != null && ServentListener.isPortInUse(Integer.parseInt(ServentSingleton.getInstance().getList().get(node2Id).split(":")[1]))) {
+					if (node2Id != null && ServentListener.isDead(isAvailableAddressNode2[0], Integer.parseInt(isAvailableAddressNode2[1]))) {
 
 						// if NODE_1 exist and is NOT alive
-						if (node1Id != null && ServentListener.isPortInUse(Integer.parseInt(ServentSingleton.getInstance().getList().get(node1Id).split(":")[1]))) {
+						if (node1Id != null && ServentListener.isDead(isAvailableAddressNode1[0], Integer.parseInt(isAvailableAddressNode1[1]))) {
 
-							System.out.println("Node : 1 [DEAD]");
-							System.out.println("Node : 2 [DEAD]");
+							System.out.println("Node : 1 [DEAD]" + isAvailableAddressNode1[0] + ":" + isAvailableAddressNode1[1]);
+							System.out.println("Node : 2 [DEAD]" + isAvailableAddressNode2[0] + ":" + isAvailableAddressNode2[1]);
 
 							// Set Servant
 							// Update map
@@ -1483,7 +1563,7 @@ public class Responder implements Runnable{
 							freeFieldNumber = 2;
 
 						} else {
-							System.out.println("Node : 2 [DEAD]");
+							System.out.println("Node : 2 [DEAD]" + isAvailableAddressNode2[0] + ":" + isAvailableAddressNode2[1]);
 
 							// Set Servant
 							// Update map
@@ -1500,10 +1580,10 @@ public class Responder implements Runnable{
 							freeFieldId = ServentSingleton.getInstance().getId();
 							freeFieldNumber = 1;
 						}
-					} else if (node1Id != null && ServentListener.isPortInUse(Integer.parseInt(ServentSingleton.getInstance().getList().get(node1Id).split(":")[1]))) {
+					} else if (node1Id != null && ServentListener.isDead(isAvailableAddressNode1[0], Integer.parseInt(isAvailableAddressNode1[1]))) {
 						// if NODE_1 exist and is NOT alive
 
-						System.out.println("Node : 1 [DEAD]");
+						System.out.println("Node : 1 [DEAD]" + isAvailableAddressNode1[0] + ":" + isAvailableAddressNode1[1]);
 
 						// Set Servant
 						// Update map
@@ -1526,7 +1606,10 @@ public class Responder implements Runnable{
 							Map.Entry pair = (Map.Entry) it.next();
 
 							if (Methods.isLocalParent(pair.getKey().toString()) && !Methods.isGlobalParent(pair.getKey().toString()) && !pair.getKey().toString().equals(ServentSingleton.getInstance().getId())) {
-								if (ServentListener.isPortInUse(Integer.parseInt(ServentSingleton.getInstance().getList().get(pair.getKey()).split(" ")[0].split(":")[1]))) {
+
+								isAvailableAddress = ServentSingleton.getInstance().getList().get(pair.getKey()).split(" ")[0].split(":");
+
+								if (ServentListener.isDead(isAvailableAddress[0], Integer.parseInt(isAvailableAddress[1]))) {
 
 									// Wait! Maybe is not DEAD!!!
 
@@ -1537,7 +1620,7 @@ public class Responder implements Runnable{
 									}
 
 									// Check again
-									if (ServentListener.isPortInUse(Integer.parseInt(ServentSingleton.getInstance().getList().get(pair.getKey()).split(" ")[0].split(":")[1]))) {
+									if (ServentListener.isDead(isAvailableAddress[0], Integer.parseInt(isAvailableAddress[1]))) {
 
 										// Notify parent
 										String[] addressOfParent = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId()).split(":");
@@ -1571,14 +1654,17 @@ public class Responder implements Runnable{
 					String parentId = ServentSingleton.getInstance().getId().substring(0, ServentSingleton.getInstance().getId().length() - 1) + "0";
 					String node2Id = Methods.getNode2(ServentSingleton.getInstance().getList());
 
+					isAvailableAddressParent = parentId != null ? ServentSingleton.getInstance().getList().get(parentId).split(":") : null;
+					isAvailableAddressNode2 = node2Id != null ? ServentSingleton.getInstance().getList().get(node2Id).split(":") : null;
+
 					// if Parent exist and is NOT alive
-					if (parentId != null && ServentListener.isPortInUse(Integer.parseInt(ServentSingleton.getInstance().getList().get(parentId).split(":")[1]))) {
+					if (parentId != null && ServentListener.isDead(isAvailableAddressParent[0], Integer.parseInt(isAvailableAddressParent[1]))) {
 
 						// if NODE_2 exist and is NOT alive
-						if (node2Id != null && ServentListener.isPortInUse(Integer.parseInt(ServentSingleton.getInstance().getList().get(node2Id).split(":")[1]))) {
+						if (node2Id != null && ServentListener.isDead(isAvailableAddressNode2[0], Integer.parseInt(isAvailableAddressNode2[1]))) {
 
-							System.out.println("Parent : [DEAD]");
-							System.out.println("Node : 2 [DEAD]");
+							System.out.println("Parent : [DEAD]" + isAvailableAddressParent[0] + ":" + isAvailableAddressParent[1]);
+							System.out.println("Node : 2 [DEAD]" + isAvailableAddressNode2[0] + ":" + isAvailableAddressNode2[1]);
 
 							// Set Servant
 							// Update map
@@ -1600,7 +1686,7 @@ public class Responder implements Runnable{
 							freeFieldNumber = 2;
 						} else {
 
-							System.out.println("Parent : [DEAD]");
+							System.out.println("Parent : [DEAD]" + isAvailableAddressParent[0] + ":" + isAvailableAddressParent[1]);
 
 							// Set Servant
 							// Update map
@@ -1630,14 +1716,17 @@ public class Responder implements Runnable{
 					String parentId = ServentSingleton.getInstance().getId().substring(0, ServentSingleton.getInstance().getId().length() - 1) + "0";
 					String node1Id = Methods.getNode1(ServentSingleton.getInstance().getList());
 
+					isAvailableAddressParent = parentId != null ? ServentSingleton.getInstance().getList().get(parentId).split(":") : null;
+					isAvailableAddressNode1 = node1Id != null ? ServentSingleton.getInstance().getList().get(node1Id).split(":") : null;
+
 					// if Parent exist and is NOT alive
-					if (node1Id != null && ServentListener.isPortInUse(Integer.parseInt(ServentSingleton.getInstance().getList().get(node1Id).split(":")[1]))) {
+					if (node1Id != null && ServentListener.isDead(isAvailableAddressNode1[0], Integer.parseInt(isAvailableAddressNode1[1]))) {
 
 						// if NODE_2 exist and is NOT alive
-						if (parentId != null && ServentListener.isPortInUse(Integer.parseInt(ServentSingleton.getInstance().getList().get(parentId).split(":")[1]))) {
+						if (parentId != null && ServentListener.isDead(isAvailableAddressParent[0], Integer.parseInt(isAvailableAddressParent[1]))) {
 
-							System.out.println("Parent : [DEAD]");
-							System.out.println("Node : 1 [DEAD]");
+							System.out.println("Parent : [DEAD]" + isAvailableAddressParent[0] + ":" + isAvailableAddressParent[1]);
+							System.out.println("Node : 1 [DEAD]" + isAvailableAddressNode1[0] + ":" + isAvailableAddressNode1[1]);
 
 							// Set Servant
 							// Update map
@@ -1658,7 +1747,7 @@ public class Responder implements Runnable{
 							freeFieldId = ServentSingleton.getInstance().getId();
 							freeFieldNumber = 2;
 						}
-					} else if(parentId != null && ServentListener.isPortInUse(Integer.parseInt(ServentSingleton.getInstance().getList().get(parentId).split(":")[1]))) {
+					} else if(parentId != null && ServentListener.isDead(isAvailableAddressParent[0], Integer.parseInt(isAvailableAddressParent[1]))) {
 
 						// if NODE_2 exist and is NOT alive
 
@@ -1668,7 +1757,7 @@ public class Responder implements Runnable{
 
 						if (node1Id == null) {
 
-							System.out.println("Parent : [DEAD]");
+							System.out.println("Parent : [DEAD] " + isAvailableAddressParent[0] + ":" + isAvailableAddressParent[1]);
 
 							if (node1Id != null) {
 								ServentSingleton.getInstance().setEmptyLocalChild(1);
@@ -1691,8 +1780,10 @@ public class Responder implements Runnable{
 					}
 				}
 
+				// obavesti sve koje treba
 				if (freeFieldAddress != null && freeFieldId != null && freeFieldNumber != -1) {
-					if (!ServentListener.isPortInUse(Integer.parseInt(freeFieldAddress[1]))) {
+					if (!ServentListener.isDead(freeFieldAddress[0], Integer.parseInt(freeFieldAddress[1]))) {
+						System.out.println("NOTIFY " + freeFieldAddress[0] + ":" + freeFieldAddress[1]);
 						try {
 							socket = new Socket(freeFieldAddress[0], Integer.parseInt(freeFieldAddress[1]));
 						} catch (IOException e) {
@@ -1711,16 +1802,16 @@ public class Responder implements Runnable{
 					}
 				}
 
-
+				// sacekaj 2s posle svake iteracije
 				try {
 					Thread.sleep(2000);
 				} catch	(InterruptedException e) {
 					e.printStackTrace();
 				}
 
-				// call parent again
+				// proveri opet da li neko fali, ZA SVAKOG CVORA SE PROLAZI
 				String[] addressOfParent = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId()).split(":");
-				if (!ServentListener.isPortInUse(Integer.parseInt(addressOfParent[1]))) {
+				if (!ServentListener.isDead(addressOfParent[0], Integer.parseInt(addressOfParent[1]))) {
 					try {
 						socket = new Socket(addressOfParent[0], Integer.parseInt(addressOfParent[1]));
 					} catch (IOException e) {

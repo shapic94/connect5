@@ -49,7 +49,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
 
         BorderPane bp = new BorderPane();
-        Scene scene = new Scene(bp,950,900);
+        Scene scene = new Scene(bp,950,1200);
         GridPane gp = new GridPane();
         FlowPane layout = new FlowPane();
         bp.setTop(layout);
@@ -76,27 +76,34 @@ public class Main extends Application {
         //chart.setTitle("Connect5");
 
         final Label caption = new Label("");
-        caption.setTextFill(Color.WHITESMOKE);
+        caption.setTextFill(Color.RED);
         caption.setStyle("-fx-font: 24 arial;");
+//        caption.set
 
         for(final PieChart.Data data: chart.getData()){
             data.getNode().addEventHandler(MouseEvent.MOUSE_PRESSED,
                     new EventHandler<MouseEvent>() {
                         @Override
                         public void handle(MouseEvent event) {
-                            caption.setTranslateX(event.getSceneX());
-                            caption.setTranslateY(event.getSceneY());
+                            System.out.println(data.getPieValue());
+                            caption.setTranslateX(50);
+                            caption.setTranslateY(50);
+//                            caption.
                             caption.setText(String.valueOf(data.getPieValue()) + "%");
+                            System.out.println(caption.getText());
                         }
                     });
         }
-        //((Group) scene.getRoot()).getChildren().addAll(chart, caption);
+        ((BorderPane) scene.getRoot()).getChildren().addAll(chart, caption);
 
+//        scene.getRoot().getChildrenUnmodifiable().addAll(chart, caption);
+
+//        ((Group) scene.getRoot()).getChildren().add(chart);
         gp.add(chart,1,1);
 
         primaryStage.setScene(scene);
         primaryStage.show();
-        primaryStage.setResizable(false);
+        primaryStage.setResizable(true);
 
 
         // first player
@@ -200,45 +207,45 @@ public class Main extends Application {
                 Component.getInstance().getResultHB()
         );
 
-
-        Component.getInstance().getStartB().setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                Socket socket = null;
-                try {
-                    String player1 = Component.getInstance().getPlayer1TF().getText();
-                    String player2 = Component.getInstance().getPlayer2TF().getText();
-                    int row = Integer.parseInt(Component.getInstance().getRowTF().getText());
-                    int col = Integer.parseInt(Component.getInstance().getColTF().getText());
-                    int tokens = Integer.parseInt(Component.getInstance().getTokensTF().getText());
-                    int times = Integer.parseInt(Component.getInstance().getTimesTF().getText());
-
-                    if (!player1.equals("") && !player2.equals("") && row != 0 && col != 0 && tokens != 0 && times != 0) {
-                        socket = new Socket(Storage.BOOTSTRAP_IP, Storage.BOOTSTRAP_PORT);
-
-                        // GUI_INFO ip:port player1,player2,row,col,tokens,times
-                        SocketUtils.writeLine(
-                                socket,
-                                Storage.GUI_INFO + " " +
-                                socket.getInetAddress().getHostAddress() + ":" +
-                                socket.getPort() + " " +
-                                player1 + "," +
-                                player2 + "," +
-                                row + "," +
-                                col + "," +
-                                tokens + "," +
-                                times + ",");
-                    }
-
-//                    // Initializing
-//                    Object[] object = new Operations().init(player1, player2, row, col, tokens, times);
-
-                } catch (NumberFormatException err) {
-                    System.out.println("Greska");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+//
+//        Component.getInstance().getStartB().setOnAction(new EventHandler<ActionEvent>() {
+//            @Override
+//            public void handle(ActionEvent event) {
+//                Socket socket = null;
+//                try {
+//                    String player1 = Component.getInstance().getPlayer1TF().getText();
+//                    String player2 = Component.getInstance().getPlayer2TF().getText();
+//                    int row = Integer.parseInt(Component.getInstance().getRowTF().getText());
+//                    int col = Integer.parseInt(Component.getInstance().getColTF().getText());
+//                    int tokens = Integer.parseInt(Component.getInstance().getTokensTF().getText());
+//                    int times = Integer.parseInt(Component.getInstance().getTimesTF().getText());
+//
+////                    if (!player1.equals("") && !player2.equals("") && row != 0 && col != 0 && tokens != 0 && times != 0) {
+////                        socket = new Socket(Storage.BOOTSTRAP_IP, Storage.BOOTSTRAP_PORT);
+////
+////                        // GUI_INFO ip:port player1,player2,row,col,tokens,times
+////                        SocketUtils.writeLine(
+////                                socket,
+////                                Storage.GUI_INFO + " " +
+////                                socket.getInetAddress().getHostAddress() + ":" +
+////                                socket.getPort() + " " +
+////                                player1 + "," +
+////                                player2 + "," +
+////                                row + "," +
+////                                col + "," +
+////                                tokens + "," +
+////                                times + ",");
+////                    }
+//
+////                    // Initializing
+////                    Object[] object = new Operations().init(player1, player2, row, col, tokens, times);
+//
+//                } catch (NumberFormatException err) {
+//                    System.out.println("Greska");
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
     }
 }

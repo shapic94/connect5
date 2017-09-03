@@ -52,4 +52,18 @@ public class ServentListener implements Runnable {
 
 		return result;
 	}
+
+	public static boolean isDead(String ip, int port) {
+		// Assume no connection is possible.
+		boolean result = true;
+
+		try {
+			(new Socket(ip, port)).close();
+			result = false;
+		} catch(IOException e) {
+			// Could not connect.
+		}
+
+		return result;
+	}
 }
