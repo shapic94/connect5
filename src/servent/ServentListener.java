@@ -71,21 +71,25 @@ public class ServentListener implements Runnable {
 	}
 
 	public static void createSocket(String ip, String port, String info) {
-		if (!ServentListener.isDead(ip, Integer.parseInt(port))) {
-			while (true) {
-				try {
-					Socket socket = new Socket(ip, Integer.parseInt(port));
+		boolean breakDead = true;
+		while (breakDead) {
+			if (!ServentListener.isDead(ip, Integer.parseInt(port))) {
+				while (true) {
+					try {
+						Socket socket = new Socket(ip, Integer.parseInt(port));
 
-					SocketUtils.writeLine(socket, info);
-					break;
-				} catch (SocketException e) {
-					System.out.println("SocketException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
-				} catch (IOException e) {
-					System.out.println("IOException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
+						SocketUtils.writeLine(socket, info);
+						breakDead = false;
+						break;
+					} catch (SocketException e) {
+						System.out.println("SocketException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
+					} catch (IOException e) {
+						System.out.println("IOException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
+					}
 				}
+			} else {
+				System.out.println("Can't connect to : " + ip + ":" + port);
 			}
-		} else {
-			System.out.println("Can't connect to : " + ip + ":" + port);
 		}
 	}
 }
