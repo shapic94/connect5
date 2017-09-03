@@ -82,7 +82,11 @@ public class Responder implements Runnable{
 						// CIRCLE CHECK
 						// Create socket
 						info = Storage.CIRCLE_CHECK + " test 123123:3123";
-						ServentListener.createSocket(ip, port, info);
+						try {
+							ServentListener.createSocket(InetAddress.getLocalHost().getHostAddress(), Integer.toString(ServentListener.LISTENER_PORT), info);
+						} catch (UnknownHostException e) {
+							e.printStackTrace();
+						}
 
 
 						// Show id
@@ -664,7 +668,11 @@ public class Responder implements Runnable{
 							// CIRCLE CHECK
 							// Create socket
 							info = Storage.CIRCLE_CHECK + " test 123123:3123";
-							ServentListener.createSocket(ip, Integer.toString(ServentListener.LISTENER_PORT), info);
+							try {
+								ServentListener.createSocket(InetAddress.getLocalHost().getHostAddress(), Integer.toString(ServentListener.LISTENER_PORT), info);
+							} catch (UnknownHostException e) {
+								e.printStackTrace();
+							}
 						}
 
 						// Show id
@@ -847,7 +855,12 @@ public class Responder implements Runnable{
 							// CIRCLE CHECK
 							// Create socket
 							info = Storage.CIRCLE_CHECK + " test 123123:3123";
-							ServentListener.createSocket(ip, Integer.toString(ServentListener.LISTENER_PORT), info);
+							System.out.println(ip + " : " +ServentListener.LISTENER_PORT);
+							try {
+								ServentListener.createSocket(InetAddress.getLocalHost().getHostAddress(), Integer.toString(ServentListener.LISTENER_PORT), info);
+							} catch (UnknownHostException e) {
+								e.printStackTrace();
+							}
 
 						} else {
 							// If notify old node
@@ -1401,6 +1414,7 @@ public class Responder implements Runnable{
 				String freeFieldId = null;
 				int freeFieldNumber = -1;
 
+				System.out.println(ServentSingleton.getInstance().getId() + " - " + Methods.isNode1(ServentSingleton.getInstance().getId()));
 
 				// if it is parent
 				if (ServentSingleton.getInstance().getId() != null && Methods.isLocalParent(ServentSingleton.getInstance().getId())) {
@@ -1526,6 +1540,8 @@ public class Responder implements Runnable{
 					isAvailableAddressParent = parentId != null && ServentSingleton.getInstance().getList().containsKey(parentId) ? ServentSingleton.getInstance().getList().get(parentId).split(":") : null;
 					isAvailableAddressNode2 = node2Id != null && ServentSingleton.getInstance().getList().containsKey(node2Id) ? ServentSingleton.getInstance().getList().get(node2Id).split(":") : null;
 
+					System.out.println(ServentListener.isDead(isAvailableAddressParent[0], Integer.parseInt(isAvailableAddressParent[1])));
+					System.out.println(ServentListener.isDead(isAvailableAddressNode2[0], Integer.parseInt(isAvailableAddressNode2[1])));
 					// if Parent exist and is NOT alive
 					if (parentId != null && isAvailableAddressParent != null && ServentListener.isDead(isAvailableAddressParent[0], Integer.parseInt(isAvailableAddressParent[1]))) {
 
@@ -1682,7 +1698,11 @@ public class Responder implements Runnable{
 
 				// Create socket
 				info = Storage.CIRCLE_CHECK + " test 123123:3123";
-				ServentListener.createSocket(addressOfParent[0], addressOfParent[1], info);
+				try {
+					ServentListener.createSocket(InetAddress.getLocalHost().getHostAddress(), Integer.toString(ServentListener.LISTENER_PORT), info);
+				} catch (UnknownHostException e) {
+					e.printStackTrace();
+				}
 
 				break;
 			default:
