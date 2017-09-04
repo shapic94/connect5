@@ -13,7 +13,7 @@ public class Storage {
     // Bootstrap & servants communication
 
     // Server port
-    public static final String BOOTSTRAP_IP = "192.168.40.156";
+    public static final String BOOTSTRAP_IP = "192.168.0.159";
     public static final int BOOTSTRAP_PORT = 1234;
 
     // New Node ---- > Server
@@ -73,6 +73,9 @@ public class Storage {
     public static final String CIRCLE_CHECK = "CIRCLE_CHECK";
 
     public static final String GAME = "GAME";
+    public static final String MORE_GAME = "MORE_GAME";
+    public static final String ACCEPT_MORE_GAME = "ACCEPT_MORE_GAME";
+    public static final String GAME_FINISHED = "GAME_FINISHED";
     public static final String WIN = "WIN";
     public static final String WIN_CHILD = "WIN_CHILD";
 

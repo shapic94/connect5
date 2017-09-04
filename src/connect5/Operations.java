@@ -24,6 +24,7 @@ public class Operations implements OperationsAbstract {
 
     Socket socket;
     String info;
+    String[] notifyAddress;
 
     @Override
     public int[] init(String player1, String player2, int row, int col, int tokens, int times) {
@@ -86,7 +87,8 @@ public class Operations implements OperationsAbstract {
         long totalTime = 0;
 
         startTime = System.currentTimeMillis();
-        for (int i = 0; i < algorithm.getTimes(); i++) {
+        while (true) {
+//        for (int i = 0; i < algorithm.getTimes(); i++) {
 
             // Start test
 //            System.out.println("[Operations][test()] Testing...");
@@ -148,11 +150,10 @@ public class Operations implements OperationsAbstract {
 //            System.out.println(ServentSingleton.getInstance().getPlayer2() + " : " + ServentSingleton.getInstance().getResultPlayer2());
 
 
-            if (sendPackages == Storage.TIMES_PER_SEC || i + 1 == algorithm.getTimes()) {
+            if (sendPackages == Storage.TIMES_PER_SEC || ServentSingleton.getInstance().getTempTimes() == 1) {
                 endTime   = System.currentTimeMillis();
                 totalTime = endTime - startTime;
                 startTime = System.currentTimeMillis();
-                String[] notifyAddress;
 
                 ServentSingleton.getInstance().setLoadTime(Methods.loadTime(ServentSingleton.getInstance().getLoadTime(), totalTime));
 
@@ -221,6 +222,39 @@ public class Operations implements OperationsAbstract {
                 sendPackages = 0;
                 crni = 0;
                 beli = 0;
+            }
+
+//            algorithm.setTimes(algorithm.getTimes() - 1);
+            ServentSingleton.getInstance().setTempTimes(ServentSingleton.getInstance().getTempTimes() - 1);
+
+            if (ServentSingleton.getInstance().getTempTimes() <= 0) {
+
+                String notifyAddressTemp = ServentSingleton.getInstance().getList().get(Methods.getParent(ServentSingleton.getInstance().getList()));
+                if (notifyAddressTemp.contains(" ")) {
+                    notifyAddress = notifyAddressTemp.split(" ")[0].split(":");
+                } else {
+                    notifyAddress = notifyAddressTemp.split(":");
+                }
+
+                // NOTIFY GLOBAL PARENT THAT I AM DONE, MAYBE LOOKING FOR MORE GAMES, IF SOMEONE NOT FINISHED YET
+
+                // Create socket
+                try {
+                    info = Storage.NOTIFY_GLOBAL_PARENT + " " +
+                            Storage.GAME_FINISHED + " " +
+                            Methods.getAddress()+ " " +
+                            ServentSingleton.getInstance().getId();
+
+                    ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                }
+
+                ServentSingleton.getInstance().getProccess().put(ServentSingleton.getInstance().getId(), String.valueOf(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(ServentSingleton.getInstance().getId())) - 1));
+                ServentSingleton.getInstance().setPlaying(false);
+
+                System.out.println("GOTOV!");
+                break;
             }
 
             reset(algorithm, black, white);

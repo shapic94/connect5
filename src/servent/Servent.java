@@ -7,6 +7,7 @@ public class Servent {
 
 //    HashMap<String, String> list = new HashMap<String, String>();
     ConcurrentHashMap<String, String> list = new ConcurrentHashMap<String, String>();
+    ConcurrentHashMap<String, String> proccess = new ConcurrentHashMap<String, String>();
     String id = null;
     int emptyLocalChild;
     int emptyGlobalChild;
@@ -16,6 +17,8 @@ public class Servent {
     int localResultPlayer1;
     int localResultPlayer2;
     String izigravanje;
+
+    boolean playing;
 
     String player1;
     String player2;
@@ -41,6 +44,18 @@ public class Servent {
 
     public void setList(ConcurrentHashMap<String, String> list) {
         this.list = list;
+    }
+
+    public void updateProccess(String key, String value) {
+        this.proccess.put(key, value);
+    }
+
+    public ConcurrentHashMap<String, String> getProccess() {
+        return proccess;
+    }
+
+    public void setProccess(ConcurrentHashMap<String, String> proccess) {
+        this.proccess = proccess;
     }
 
     public String getId() {
@@ -177,5 +192,13 @@ public class Servent {
 
     public void setLoadTime(long loadTime) {
         this.loadTime = loadTime;
+    }
+
+    public boolean isPlaying() {
+        return playing;
+    }
+
+    public void setPlaying(boolean playing) {
+        this.playing = playing;
     }
 }

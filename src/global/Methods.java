@@ -1,5 +1,6 @@
 package global;
 
+import servent.Servent;
 import servent.ServentListener;
 import servent.ServentSingleton;
 
@@ -180,7 +181,9 @@ public class Methods {
         test = hashmap.split(",--");
 
         for (int i = 0; i < test.length; i++) {
-            test[i] = test[i].replace("--", " ");
+            if (test[i].contains("--")) {
+                test[i] = test[i].replace("--", " ");
+            }
         }
 
         return test;
@@ -530,6 +533,9 @@ public class Methods {
 
         // Show map
         System.out.println("Mapa : " + ServentSingleton.getInstance().getList());
+
+        // Show Proccess
+        System.out.println("Proces : " + ServentSingleton.getInstance().getProccess());
 
         System.out.println("--------------------------------------------------");
     }
