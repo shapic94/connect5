@@ -8,6 +8,7 @@ public class Servent {
 //    HashMap<String, String> list = new HashMap<String, String>();
     ConcurrentHashMap<String, String> list = new ConcurrentHashMap<String, String>();
     ConcurrentHashMap<String, String> proccess = new ConcurrentHashMap<String, String>();
+    ConcurrentHashMap<String, String> waiting = new ConcurrentHashMap<String, String>();
     String id = null;
     int emptyLocalChild;
     int emptyGlobalChild;
@@ -200,5 +201,13 @@ public class Servent {
 
     public void setPlaying(boolean playing) {
         this.playing = playing;
+    }
+
+    public ConcurrentHashMap<String, String> getWaiting() {
+        return waiting;
+    }
+
+    public void setWaiting(ConcurrentHashMap<String, String> waiting) {
+        this.waiting = waiting;
     }
 }

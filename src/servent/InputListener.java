@@ -71,6 +71,11 @@ public class InputListener implements Runnable {
                 System.out.println("[GLOBAL] " + ServentSingleton.getInstance().getPlayer2() + " : " + ServentSingleton.getInstance().getResultPlayer2());
                 System.out.println("[LOCAL] " + ServentSingleton.getInstance().getPlayer1() + " : " + ServentSingleton.getInstance().getLocalResultPlayer1());
                 System.out.println("[LOCAL] " + ServentSingleton.getInstance().getPlayer2() + " : " + ServentSingleton.getInstance().getLocalResultPlayer2());
+                try {
+                    Methods.printInfo();
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                }
             } else if (parseOption[0].toUpperCase().equals("CLEAR")) {
                 for (int i = 0; i < 20; i++) {
                     System.out.println("-");

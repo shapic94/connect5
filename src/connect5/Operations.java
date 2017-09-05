@@ -229,31 +229,45 @@ public class Operations implements OperationsAbstract {
 
             if (ServentSingleton.getInstance().getTempTimes() <= 0) {
 
-                String notifyAddressTemp = ServentSingleton.getInstance().getList().get(Methods.getParent(ServentSingleton.getInstance().getList()));
+//                String notifyAddressTemp = ServentSingleton.getInstance().getList().get(Methods.getParent(ServentSingleton.getInstance().getList()));
+                String notifyAddressTemp = Methods.isLocalParent(ServentSingleton.getInstance().getId()) ? ServentSingleton.getInstance().getList().get(Methods.getParent(ServentSingleton.getInstance().getList())) : ServentSingleton.getInstance().getList().get(Methods.getLocalParent(ServentSingleton.getInstance().getId()));
                 if (notifyAddressTemp.contains(" ")) {
                     notifyAddress = notifyAddressTemp.split(" ")[0].split(":");
                 } else {
                     notifyAddress = notifyAddressTemp.split(":");
                 }
 
-                // NOTIFY GLOBAL PARENT THAT I AM DONE, MAYBE LOOKING FOR MORE GAMES, IF SOMEONE NOT FINISHED YET
+                if (Methods.isLocalParent(ServentSingleton.getInstance().getId())) {
+                    String[] testProcesa1;
+                    String testProcesa = ServentSingleton.getInstance().getProccess().get(ServentSingleton.getInstance().getId());
+                    if (testProcesa.contains(".")) {
+                        testProcesa1 = testProcesa.toString().split("\\.");
+                        ServentSingleton.getInstance().getProccess().put(ServentSingleton.getInstance().getId(), Integer.toString(Integer.parseInt(testProcesa1[0]) - 1) + "." + testProcesa1[1]);
+                    } else {
+                        ServentSingleton.getInstance().getProccess().put(ServentSingleton.getInstance().getId(), Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(ServentSingleton.getInstance().getId())) - 1));
+                    }
+                }
+
+                ServentSingleton.getInstance().setPlaying(false);
+
+                System.out.println("GOTOV!");
+
+                String testiranje = "0";
+                if (Methods.isLocalParent(ServentSingleton.getInstance().getId())) {
+                    testiranje = "1";
+                }
 
                 // Create socket
                 try {
                     info = Storage.NOTIFY_GLOBAL_PARENT + " " +
                             Storage.GAME_FINISHED + " " +
                             Methods.getAddress()+ " " +
-                            ServentSingleton.getInstance().getId();
+                            ServentSingleton.getInstance().getId() + " 0 " + testiranje;
 
                     ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
                 } catch (UnknownHostException e) {
                     e.printStackTrace();
                 }
-
-                ServentSingleton.getInstance().getProccess().put(ServentSingleton.getInstance().getId(), String.valueOf(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(ServentSingleton.getInstance().getId())) - 1));
-                ServentSingleton.getInstance().setPlaying(false);
-
-                System.out.println("GOTOV!");
                 break;
             }
 

@@ -229,7 +229,8 @@ public class Responder implements Runnable{
 										Methods.extendHashMap(ServentSingleton.getInstance().getList());
 										Methods.extendHashMap(ServentSingleton.getInstance().getProccess());
 										ServentSingleton.getInstance().updateList(parentId, ip + ":" + port + " " + Methods.numberOfChildrenGlobal(ServentSingleton.getInstance().getId()));
-										ServentSingleton.getInstance().updateProccess(parentId, "0");
+										ServentSingleton.getInstance().updateProccess(parentId, "0." +  (Methods.numberOfChildrenGlobal(parentId) - Integer.parseInt(ServentSingleton.getInstance().getList().get(parentId).split(" ")[1])));
+
 
 										// Prepare new map
 										HashMap<String, String> parentHashmapList = new HashMap<String, String>();
@@ -375,8 +376,30 @@ public class Responder implements Runnable{
 							// If it is global parent
 							if (Methods.isGlobalParent(ServentSingleton.getInstance().getId())) {
 
+								// Reduce izigravanje
+								if (message[4].equals("1") || (message[4].equals("0") && !Methods.isGlobalParent(message[3]))) {
+
+									String testProcesa = ServentSingleton.getInstance().getProccess().get(message[3]);
+									String[] testProcesa1;
+									if (testProcesa.toString().contains(".")) {
+										testProcesa1 = testProcesa.toString().split("\\.");
+										if (message[5].equals("1")) {
+											System.out.println("Javio see breee " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.toString(Integer.parseInt(testProcesa1[0]) - 1) + "." + testProcesa1[1]) + "] - " + ServentSingleton.getInstance().getProccess());
+											ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(testProcesa1[0]) - 1) + "." + testProcesa1[1]);
+										} else {
+											System.out.println("Javio see breee " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) -1 )) + "] " + ServentSingleton.getInstance().getProccess());
+											ServentSingleton.getInstance().getProccess().put(message[3], testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) -1 ));
+										}
+									} else {
+										System.out.println("Javio see breee " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) - 1) + "] " + ServentSingleton.getInstance().getProccess());
+										ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) - 1));
+									}
+								} else {
+									System.out.println("Javio see breee " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3]))) + "] " + ServentSingleton.getInstance().getProccess());
+									ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3]))));
+								}
+
 								Iterator iterateMoreGame;
-								System.out.println("JAVIO MI SE DA JE GOTOV SVE " + ip + ":" + port + " -- " + message[3]);
 
 								// proveri da li neko izigrava
 								// NOTIFY_ALL
@@ -384,33 +407,15 @@ public class Responder implements Runnable{
 								while (iterateMoreGame.hasNext()) {
 									Map.Entry pair = (Map.Entry) iterateMoreGame.next();
 
-									// Ako izigrava
-									if (Integer.parseInt(pair.getValue().toString()) > 0) {
+									// Ako nije parent
+									if (!pair.getValue().toString().contains(".")) {
 
-										// ne proveravaj onog ko ti je poslao
-										if (!message[3].equals(pair.getKey().toString())) {
+										// Ako ima slobodnih
+										if (Integer.parseInt(pair.getValue().toString()) > 0) {
 
-											// Ako je mene pitao, a izigravam, dajem mu pola izigravanja da nastavi
-											if (ServentSingleton.getInstance().getId().equals(pair.getKey().toString()) && ServentSingleton.getInstance().isPlaying()) {
-												int myTimes = ServentSingleton.getInstance().getTempTimes();
-												int hisTimes = ServentSingleton.getInstance().getTempTimes() / 2;
-												ServentSingleton.getInstance().setTempTimes(myTimes - hisTimes);
-
-												// Create socket
-												try {
-													info = Storage.NOTIFY_CHILD + " " +
-															Storage.ACCEPT_MORE_GAME + " " +
-															Methods.getAddress() + " " +
-															hisTimes;
-
-													ServentListener.createSocket(ip, port, info);
-												} catch (UnknownHostException e) {
-													e.printStackTrace();
-												}
-
-												break;
-											} else if (Methods.isNode1(pair.getKey().toString()) || Methods.isNode2(pair.getKey().toString())) {
-												// Ako njegovi childovi imaju izigrivanja, posalji ih kod njih, da im uzme izigravanja momentalno
+											// Ako childovi imaju izigravanja, salji njima note
+											if (Methods.isNode1(pair.getKey().toString()) || Methods.isNode2(pair.getKey().toString())) {
+//												 Ako njegovi childovi imaju izigrivanja, posalji ih kod njih, da im uzme izigravanja momentalno
 
 												String[] notifyAddress;
 
@@ -421,25 +426,24 @@ public class Responder implements Runnable{
 													notifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(":");
 												}
 
-												// Create socket
-												info = Storage.NOTIFY_CHILD + " " +
-														Storage.MORE_GAME + " " +
-														ip + ":" + port + " " +
-														message[3];
-
-												ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
-
-												break;
-											} else {
-												// ako je neki drugi parent a ima izigravanja neko njegov, salji ga kod njega !
-												String[] notifyAddress;
-
-												if (ServentSingleton.getInstance().getList().get(pair.getKey().toString()).contains(" ")) {
-													String[] parseToNotifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(" ");
-													notifyAddress = parseToNotifyAddress[0].split(":");
+												String testProcesa = ServentSingleton.getInstance().getProccess().get(message[3]);
+												String[] testProcesa1;
+												if (testProcesa.toString().contains(".")) {
+													testProcesa1 = testProcesa.toString().split("\\.");
+													if (Methods.isLocalParent(message[3])) {
+															System.out.println("Pitaj za izigravanja1.1 " + notifyAddress[0] + ":" + notifyAddress[1] + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]) + "] " + ServentSingleton.getInstance().getProccess());
+														ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]);
+													} else {
+															System.out.println("Pitaj za izigravanja1.2 " + notifyAddress[0] + ":" + notifyAddress[1] + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1 )) + "] " + ServentSingleton.getInstance().getProccess());
+														ServentSingleton.getInstance().getProccess().put(message[3], testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1 ));
+													}
 												} else {
-													notifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(":");
+														System.out.println("Pitaj za izigravanja1.3 " + notifyAddress[0] + ":" + notifyAddress[1] + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1) + "] " + ServentSingleton.getInstance().getProccess());
+													ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1));
 												}
+
+												ServentSingleton.getInstance().getWaiting().put(message[3], pair.getKey().toString());
+
 
 												// Create socket
 												info = Storage.NOTIFY_CHILD + " " +
@@ -451,24 +455,484 @@ public class Responder implements Runnable{
 												ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
 
 												break;
+											} else {
+												// Ako parent ima izigravanja
+												int myTimes = ServentSingleton.getInstance().getTempTimes();
+												int hisTimes = myTimes / 2;
+
+												if (Storage.TIMES_MIN_SEND < hisTimes) {
+													System.out.println(ServentSingleton.getInstance().getTempTimes() + " - - - " + myTimes);
+													ServentSingleton.getInstance().setTempTimes(myTimes - hisTimes);
+
+													try {
+														System.out.println("[" + ip + ":" + port + "] => [" + Methods.getAddress() + "] Imao sam " + myTimes + " izigravanja, dao sam " + (myTimes / 2) + " i ostalo mi je " + (myTimes - hisTimes));
+													} catch (UnknownHostException e) {
+														e.printStackTrace();
+													}
+
+													String testProcesa = ServentSingleton.getInstance().getProccess().get(message[3]);
+													String[] testProcesa1;
+													if (testProcesa.toString().contains(".")) {
+														testProcesa1 = testProcesa.toString().split("\\.");
+														if (Methods.isLocalParent(message[3])) {
+															System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]) + "] " + ServentSingleton.getInstance().getProccess());
+															ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]);
+														} else {
+															System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1)) + "] " + ServentSingleton.getInstance().getProccess());
+															ServentSingleton.getInstance().getProccess().put(message[3], testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1));
+														}
+													} else {
+														System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1) + "] " + ServentSingleton.getInstance().getProccess());
+														ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1));
+													}
+
+													// Create socket
+													try {
+														info = Storage.NOTIFY_CHILD + " " +
+																Storage.ACCEPT_MORE_GAME + " " +
+																Methods.getAddress() + " " +
+																hisTimes;
+
+														ServentListener.createSocket(ip, port, info);
+													} catch (UnknownHostException e) {
+														e.printStackTrace();
+													}
+												}
+												break;
 											}
+										}
+									} else {
+										// Ako je on sam slobodan
+										if (Integer.parseInt(pair.getValue().toString().split("\\.")[0]) > 0 || Integer.parseInt(pair.getValue().toString().split("\\.")[1]) > 0) {
+
+											// Ako njegovi childovi imaju izigrivanja, posalji ih kod njih, da im uzme izigravanja momentalno
+
+											String[] notifyAddress;
+
+											if (ServentSingleton.getInstance().getList().get(pair.getKey().toString()).contains(" ")) {
+												String[] parseToNotifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(" ");
+												notifyAddress = parseToNotifyAddress[0].split(":");
+											} else {
+												notifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(":");
+											}
+
+											String testProcesa = ServentSingleton.getInstance().getProccess().get(message[3]);
+											String[] testProcesa1;
+											if (testProcesa.toString().contains(".")) {
+												testProcesa1 = testProcesa.toString().split("\\.");
+												if (Methods.isLocalParent(message[3])) {
+														System.out.println("Pitaj za izigravanja1.1 " + notifyAddress[0] + ":" + notifyAddress[1] + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]) + "] " + ServentSingleton.getInstance().getProccess());
+													ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]);
+												} else {
+														System.out.println("Pitaj za izigravanja1.2 " + notifyAddress[0] + ":" + notifyAddress[1] + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1 )) + "] " + ServentSingleton.getInstance().getProccess());
+													ServentSingleton.getInstance().getProccess().put(message[3], testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1 ));
+												}
+											} else {
+													System.out.println("Pitaj za izigravanja1.3 " + notifyAddress[0] + ":" + notifyAddress[1] + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1) + "] " + ServentSingleton.getInstance().getProccess());
+												ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1));
+											}
+
+											ServentSingleton.getInstance().getWaiting().put(message[3], pair.getKey().toString());
+
+											// Create socket
+											info = Storage.NOTIFY_CHILD + " " +
+													Storage.MORE_GAME + " " +
+													ip + ":" + port + " " +
+													message[3] + " " + ServentSingleton.getInstance().getId();
+
+
+											ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
+											break;
 										}
 									}
 								}
-							} else {
-								// Go to global parent
 
+							} else {
+
+								// Reduce izigravanje
+								if (message[4].equals("1") || (message[4].equals("0") && !Methods.isGlobalParent(ServentSingleton.getInstance().getId()))) {
+
+									String testProcesa = ServentSingleton.getInstance().getProccess().get(ServentSingleton.getInstance().getId());
+									String[] testProcesa1;
+									if (testProcesa.toString().contains(".")) {
+										testProcesa1 = testProcesa.toString().split("\\.");
+//										if (Methods.isLocalParent(ServentSingleton.getInstance().getId())) {
+//											System.out.println("Javio see breee " + ip + ":" + port + " - " + ServentSingleton.getInstance().getId() + " - - [" + ServentSingleton.getInstance().getProccess().get(ServentSingleton.getInstance().getId()) + "] => [" + (Integer.toString(Integer.parseInt(testProcesa1[0]) - 1) + "." + testProcesa1[1]) + "] - " + ServentSingleton.getInstance().getProccess());
+//											ServentSingleton.getInstance().getProccess().put(ServentSingleton.getInstance().getId(), Integer.toString(Integer.parseInt(testProcesa1[0]) - 1) + "." + testProcesa1[1]);
+//										} else {
+											System.out.println("Javio see breee " + ip + ":" + port + " - " + ServentSingleton.getInstance().getId() + " - - [" + ServentSingleton.getInstance().getProccess().get(ServentSingleton.getInstance().getId()) + "] => [" + (testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) -1 )) + "] " + ServentSingleton.getInstance().getProccess());
+											ServentSingleton.getInstance().getProccess().put(ServentSingleton.getInstance().getId(), testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) -1 ));
+//										}
+									} else {
+										System.out.println("Javio see breee " + ip + ":" + port + " - " + ServentSingleton.getInstance().getId() + " - - [" + ServentSingleton.getInstance().getProccess().get(ServentSingleton.getInstance().getId()) + "] => [" + Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(ServentSingleton.getInstance().getId())) - 1) + "] " + ServentSingleton.getInstance().getProccess());
+										ServentSingleton.getInstance().getProccess().put(ServentSingleton.getInstance().getId(), Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(ServentSingleton.getInstance().getId())) - 1));
+									}
+								} else {
+									System.out.println("Javio see breee " + ip + ":" + port + " - " + ServentSingleton.getInstance().getId() + " - - [" + ServentSingleton.getInstance().getProccess().get(ServentSingleton.getInstance().getId()) + "] => [" + (Integer.parseInt(ServentSingleton.getInstance().getProccess().get(ServentSingleton.getInstance().getId()))) + "] " + ServentSingleton.getInstance().getProccess());
+									ServentSingleton.getInstance().getProccess().put(ServentSingleton.getInstance().getId(), Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(ServentSingleton.getInstance().getId()))));
+								}
+
+								// Go to global parent
 								String[] addressParent = ServentSingleton.getInstance().getList().get(Methods.getParent(ServentSingleton.getInstance().getList())).split(":");
 
 								// Create socket
 								info = Storage.NOTIFY_GLOBAL_PARENT + " " +
 										Storage.GAME_FINISHED + " " +
 										ip + ":" + port + " " +
-										message[3];
+										ServentSingleton.getInstance().getId() + " 1 " + message[5];
 
-								ServentListener.createSocket(ip, port, info);
+								ServentListener.createSocket(addressParent[0], addressParent[1], info);
+
+								break;
 							}
+
 						}
+
+//								boolean pass = false;
+//
+//								if (message[4].equals("1") || (message[4].equals("0") && !Methods.isGlobalParent(message[3]))) {
+//
+//									String testProcesa = ServentSingleton.getInstance().getProccess().get(message[3]);
+//									String[] testProcesa1;
+//									if (testProcesa.toString().contains(".")) {
+//										testProcesa1 = testProcesa.toString().split("\\.");
+//										if (Methods.isLocalParent(message[3])) {
+//											System.out.println("Javio see breee " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.toString(Integer.parseInt(testProcesa1[0]) - 1) + "." + testProcesa1[1]) + "] - " + ServentSingleton.getInstance().getProccess());
+//											ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(testProcesa1[0]) - 1) + "." + testProcesa1[1]);
+//										} else {
+//											System.out.println("Javio see breee " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) -1 )) + "] " + ServentSingleton.getInstance().getProccess());
+//											ServentSingleton.getInstance().getProccess().put(message[3], testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) -1 ));
+//										}
+//									} else {
+//										System.out.println("Javio see breee " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) - 1) + "] " + ServentSingleton.getInstance().getProccess());
+//										ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) - 1));
+//									}
+//								} else {
+//									System.out.println("Javio see breee " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3]))) + "] " + ServentSingleton.getInstance().getProccess());
+//									ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3]))));
+//								}
+//
+//								ServentSingleton.getInstance().getWaiting().remove(message[3]);
+//
+//
+//
+//								Iterator iterateMoreGame;
+//
+//								// proveri da li neko izigrava
+//								// NOTIFY_ALL
+//								iterateMoreGame = ServentSingleton.getInstance().getProccess().entrySet().iterator();
+//								while (iterateMoreGame.hasNext()) {
+//									Map.Entry pair = (Map.Entry) iterateMoreGame.next();
+//
+//									// Ako izigrava
+//									String proccesses;
+//									String proccesses1;
+//									if (ServentSingleton.getInstance().getWaiting().containsKey(pair.getKey().toString())) {
+//										if (ServentSingleton.getInstance().getWaiting().get(pair.getKey().toString()) != null && ServentSingleton.getInstance().getWaiting().get(pair.getKey().toString()).toString().equals(message[3])) {
+//											continue;
+//										}
+//									}
+//									if (!pair.getValue().toString().contains(".")) {
+//
+//										if (Integer.parseInt(pair.getValue().toString()) > 0) {
+//
+//											// ne proveravaj onog ko ti je poslao, i ne samog sebe!
+//											if (!message[3].equals(pair.getKey().toString()) && !ServentSingleton.getInstance().getId().equals(pair.getKey().toString())) {
+//
+//												// Ako je mene pitao, a izigravam, dajem mu pola izigravanja da nastavi
+//												if (ServentSingleton.getInstance().getId().equals(pair.getKey().toString()) && ServentSingleton.getInstance().isPlaying()) {
+//													int myTimes = ServentSingleton.getInstance().getTempTimes();
+//													int hisTimes = myTimes / 2;
+//
+//													if (Storage.TIMES_MIN_SEND < hisTimes) {
+//														System.out.println(ServentSingleton.getInstance().getTempTimes() + " - - - " + myTimes);
+//														ServentSingleton.getInstance().setTempTimes(myTimes - hisTimes);
+//
+//														try {
+//															System.out.println("[" + ip + ":" + port + "] => [" + Methods.getAddress() + "] Imao sam " + myTimes + " izigravanja, dao sam " + (myTimes / 2) + " i ostalo mi je " + (myTimes - hisTimes));
+//														} catch (UnknownHostException e) {
+//															e.printStackTrace();
+//														}
+//
+//
+////														System.out.println("Posalji izigravanja " + ip + ":" + port + " - - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1) + "]");
+////														ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1));
+//
+//														String testProcesa = ServentSingleton.getInstance().getProccess().get(message[3]);
+//														String[] testProcesa1;
+//														if (testProcesa.toString().contains(".")) {
+//															testProcesa1 = testProcesa.toString().split("\\.");
+//															if (Methods.isLocalParent(message[3])) {
+//																System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]) + "] " + ServentSingleton.getInstance().getProccess());
+//																ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]);
+//															} else {
+//																System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1 )) + "] " + ServentSingleton.getInstance().getProccess());
+//																ServentSingleton.getInstance().getProccess().put(message[3], testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1 ));
+//															}
+//														} else {
+//															System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1) + "] " + ServentSingleton.getInstance().getProccess());
+//															ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1));
+//														}
+//
+//														pass = true;
+//
+//														// Create socket
+//														try {
+//															info = Storage.NOTIFY_CHILD + " " +
+//																	Storage.ACCEPT_MORE_GAME + " " +
+//																	Methods.getAddress() + " " +
+//																	hisTimes;
+//
+//															ServentListener.createSocket(ip, port, info);
+//														} catch (UnknownHostException e) {
+//															e.printStackTrace();
+//														}
+//													} else {
+//														String[] notifyAddress;
+//														String notifyAddressTemp = ServentSingleton.getInstance().getList().get(Methods.getParent(ServentSingleton.getInstance().getList()));
+//														if (notifyAddressTemp.contains(" ")) {
+//															notifyAddress = notifyAddressTemp.split(" ")[0].split(":");
+//														} else {
+//															notifyAddress = notifyAddressTemp.split(":");
+//														}
+//
+////														ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1));
+//														String testProcesa = ServentSingleton.getInstance().getProccess().get(message[3]);
+//														String[] testProcesa1;
+//														if (testProcesa.toString().contains(".")) {
+//															testProcesa1 = testProcesa.toString().split("\\.");
+//															if (Methods.isLocalParent(message[3])) {
+////																System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]) + "]");
+//																ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]);
+//															} else {
+////																System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1 )) + "]");
+//																ServentSingleton.getInstance().getProccess().put(message[3], testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1 ));
+//															}
+//														} else {
+////															System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1) + "]");
+//															ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1));
+//														}
+//
+//														pass = true;
+//
+//														// Create socket
+//														info = Storage.NOTIFY_GLOBAL_PARENT + " " +
+//																Storage.GAME_FINISHED + " " +
+//																ip + ":" + port + " " +
+//																message[3] + " 1";
+//
+//														ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
+//													}
+//													break;
+//												} else if (Methods.isNode1(pair.getKey().toString()) || Methods.isNode2(pair.getKey().toString())) {
+//													// Ako njegovi childovi imaju izigrivanja, posalji ih kod njih, da im uzme izigravanja momentalno
+//
+//													String[] notifyAddress;
+//
+//													if (ServentSingleton.getInstance().getList().get(pair.getKey().toString()).contains(" ")) {
+//														String[] parseToNotifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(" ");
+//														notifyAddress = parseToNotifyAddress[0].split(":");
+//													} else {
+//														notifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(":");
+//													}
+//
+//
+////													System.out.println("Pitaj za izigravanja " + notifyAddress[0] + ":" + notifyAddress[1] + " - - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1) + "]");
+////													ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1));
+//
+//													String testProcesa = ServentSingleton.getInstance().getProccess().get(message[3]);
+//													String[] testProcesa1;
+//													if (testProcesa.toString().contains(".")) {
+//														testProcesa1 = testProcesa.toString().split("\\.");
+//														if (Methods.isLocalParent(message[3])) {
+//																System.out.println("Pitaj za izigravanja1.1 " + notifyAddress[0] + ":" + notifyAddress[1] + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]) + "] " + ServentSingleton.getInstance().getProccess());
+//															ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]);
+//														} else {
+//																System.out.println("Pitaj za izigravanja1.2 " + notifyAddress[0] + ":" + notifyAddress[1] + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1 )) + "] " + ServentSingleton.getInstance().getProccess());
+//															ServentSingleton.getInstance().getProccess().put(message[3], testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1 ));
+//														}
+//													} else {
+//															System.out.println("Pitaj za izigravanja1.3 " + notifyAddress[0] + ":" + notifyAddress[1] + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1) + "] " + ServentSingleton.getInstance().getProccess());
+//														ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1));
+//													}
+//
+//													ServentSingleton.getInstance().getWaiting().put(message[3], pair.getKey().toString());
+//
+//													pass = true;
+//
+//													// Create socket
+//													info = Storage.NOTIFY_CHILD + " " +
+//															Storage.MORE_GAME + " " +
+//															ip + ":" + port + " " +
+//															message[3];
+//
+//													ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
+//													break;
+//												} else if (!Methods.isGlobalParent(pair.getKey().toString())) {
+//													// ako je neki drugi parent a ima izigravanja neko njegov, salji ga kod njega !
+//													String[] notifyAddress;
+//
+//													if (ServentSingleton.getInstance().getList().get(pair.getKey().toString()).contains(" ")) {
+//														String[] parseToNotifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(" ");
+//														notifyAddress = parseToNotifyAddress[0].split(":");
+//													} else {
+//														notifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(":");
+//													}
+//
+//
+////													System.out.println("Pitaj za izigravanja " + notifyAddress[0] + ":" + notifyAddress[1] + " - - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1) + "]");
+////													ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1));
+//
+//													String testProcesa = ServentSingleton.getInstance().getProccess().get(message[3]);
+//													String[] testProcesa1;
+//													if (testProcesa.toString().contains(".")) {
+//														testProcesa1 = testProcesa.toString().split("\\.");
+//														if (Methods.isLocalParent(message[3])) {
+//															System.out.println("Pitaj za izigravanja2.1 " + notifyAddress[0] + ":" + notifyAddress[1] + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]) + "] " + ServentSingleton.getInstance().getProccess());
+//															ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]);
+//														} else {
+//															System.out.println("Pitaj za izigravanja2.2 " + notifyAddress[0] + ":" + notifyAddress[1] + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1 )) + "] " + ServentSingleton.getInstance().getProccess());
+//															ServentSingleton.getInstance().getProccess().put(message[3], testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1 ));
+//														}
+//													} else {
+//														System.out.println("Pitaj za izigravanja2.3 " + notifyAddress[0] + ":" + notifyAddress[1] + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1) + "] " + ServentSingleton.getInstance().getProccess());
+//														ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1));
+//													}
+//
+//													ServentSingleton.getInstance().getWaiting().put(message[3], pair.getKey().toString());
+//													pass = true;
+//
+//													// Create socket
+//													info = Storage.NOTIFY_CHILD + " " +
+//															Storage.MORE_GAME + " " +
+//															ip + ":" + port + " " +
+//															message[3] + " " +
+//															ServentSingleton.getInstance().getId();
+//
+//													ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
+//													break;
+//												}
+//											}
+//										}
+//
+//									} else {
+//										// ne proveravaj onog ko ti je poslao
+//										if (!message[3].equals(pair.getKey().toString()) && !ServentSingleton.getInstance().getId().equals(pair.getKey().toString())) {
+//											if (Integer.parseInt(pair.getValue().toString().split("\\.")[0]) > 0) {
+//												// ako je neki drugi parent a ima izigravanja neko njegov, salji ga kod njega !
+//												String[] notifyAddress;
+//
+//												if (ServentSingleton.getInstance().getList().get(pair.getKey().toString()).contains(" ")) {
+//													String[] parseToNotifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(" ");
+//													notifyAddress = parseToNotifyAddress[0].split(":");
+//												} else {
+//													notifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(":");
+//												}
+//
+//
+////												System.out.println("Pitaj za izigravanja3.1 " + notifyAddress[0] + ":" + notifyAddress[1] + " - - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1) + "]");
+////												ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1));
+//
+//
+//												String testProcesa = ServentSingleton.getInstance().getProccess().get(message[3]);
+//												String[] testProcesa1;
+//												if (testProcesa.toString().contains(".")) {
+//													testProcesa1 = testProcesa.toString().split("\\.");
+//													if (Methods.isLocalParent(message[3])) {
+//														System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]) + "] " + ServentSingleton.getInstance().getProccess());
+//														ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]);
+//													} else {
+//														System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1 )) + "] " + ServentSingleton.getInstance().getProccess());
+//														ServentSingleton.getInstance().getProccess().put(message[3], testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1 ));
+//													}
+//												} else {
+//													System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1) + "] " + ServentSingleton.getInstance().getProccess());
+//													ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1));
+//												}
+//
+//												ServentSingleton.getInstance().getWaiting().put(message[3], pair.getKey().toString());
+//												pass = true;
+//
+//												// Create socket
+//												info = Storage.NOTIFY_CHILD + " " +
+//														Storage.MORE_GAME + " " +
+//														ip + ":" + port + " " +
+//														message[3] + " " +
+//														ServentSingleton.getInstance().getId();
+//
+//												ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
+//												break;
+//											} else if (Integer.parseInt(pair.getValue().toString().split("\\.")[1]) > 0) {
+//												// ako je neki drugi parent a ima izigravanja neko njegov, salji ga kod njega !
+//												String[] notifyAddress;
+//
+//												if (ServentSingleton.getInstance().getList().get(pair.getKey().toString()).contains(" ")) {
+//													String[] parseToNotifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(" ");
+//													notifyAddress = parseToNotifyAddress[0].split(":");
+//												} else {
+//													notifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(":");
+//												}
+//
+//
+////												System.out.println("Pitaj za izigravanja4.1 " + notifyAddress[0] + ":" + notifyAddress[1] + " - - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1) + "]");
+////												ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1));
+//
+//												String testProcesa = ServentSingleton.getInstance().getProccess().get(message[3]);
+//												String[] testProcesa1;
+//												if (testProcesa.toString().contains(".")) {
+//													testProcesa1 = testProcesa.toString().split("\\.");
+//													if (Methods.isLocalParent(message[3])) {
+//														System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]) + "] " + ServentSingleton.getInstance().getProccess());
+//														ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]);
+//													} else {
+//														System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1 )) + "] " + ServentSingleton.getInstance().getProccess());
+//														ServentSingleton.getInstance().getProccess().put(message[3], testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1 ));
+//													}
+//												} else {
+//													System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1) + "] " + ServentSingleton.getInstance().getProccess());
+//													ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1));
+//												}
+//
+//												ServentSingleton.getInstance().getWaiting().put(message[3], pair.getKey().toString());
+//
+//												pass = true;
+//
+//												// Create socket
+//												info = Storage.NOTIFY_CHILD + " " +
+//														Storage.MORE_GAME + " " +
+//														ip + ":" + port + " " +
+//														message[3] + " " +
+//														ServentSingleton.getInstance().getId();
+//
+//												ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
+//												break;
+//											}
+//										}
+//									}
+//								}
+//
+//								if (!pass) {
+//									System.out.println("NEMA IZIGRAVANJA - " + ip + ":" + port);
+//									try {
+//										Methods.printInfo();
+//									} catch (UnknownHostException e) {
+//										e.printStackTrace();
+//									}
+//								}
+//							} else {
+//								// Go to global parent
+//
+//								String[] addressParent = ServentSingleton.getInstance().getList().get(Methods.getParent(ServentSingleton.getInstance().getList())).split(":");
+//
+//								// Create socket
+//								info = Storage.NOTIFY_GLOBAL_PARENT + " " +
+//										Storage.GAME_FINISHED + " " +
+//										ip + ":" + port + " " +
+//										message[3] + " 1";
+//
+//								ServentListener.createSocket(ip, port, info);
+//							}
+//						}
 						break;
 				}
 				break;
@@ -600,7 +1064,8 @@ public class Responder implements Runnable{
 									Methods.extendHashMap(ServentSingleton.getInstance().getList());
 									Methods.extendHashMap(ServentSingleton.getInstance().getProccess());
 									ServentSingleton.getInstance().updateList(parentId, ip + ":" + port + " " + Methods.numberOfChildrenGlobal(ServentSingleton.getInstance().getId()));
-									ServentSingleton.getInstance().updateProccess(parentId, "0");
+//									ServentSingleton.getInstance().updateProccess(parentId, "0");
+									ServentSingleton.getInstance().updateProccess(parentId, "0." +  (Methods.numberOfChildrenGlobal(parentId) - Integer.parseInt(ServentSingleton.getInstance().getList().get(parentId).split(" ")[1])));
 
 									// Prepare new map
 									HashMap<String, String> parentHashmapList = new HashMap<String, String>();
@@ -683,7 +1148,8 @@ public class Responder implements Runnable{
 
 							// Set Servant
 							ServentSingleton.getInstance().updateList(id, ip + ":" + port);
-							ServentSingleton.getInstance().updateProccess(id, "0");
+//							ServentSingleton.getInstance().updateProccess(id, "0");
+//							ServentSingleton.getInstance().updateProccess(id, "0." +  (Methods.numberOfChildrenGlobal(id) - Integer.parseInt(ServentSingleton.getInstance().getList().get(id))));
 
 							String node1IdA = Methods.getNode1(ServentSingleton.getInstance().getList());
 							String node2IdA = Methods.getNode2(ServentSingleton.getInstance().getList());
@@ -734,7 +1200,8 @@ public class Responder implements Runnable{
 							ServentSingleton.getInstance().setProccess(Methods.createHashMap(Methods.parseHashMap(proccess)));
 							try {
 								ServentSingleton.getInstance().updateList(id, Methods.getAddress());
-								ServentSingleton.getInstance().updateProccess(id, "0");
+								ServentSingleton.getInstance().updateProccess(id, "0" + id.substring(1));
+//								ServentSingleton.getInstance().updateProccess(id, "0." +  (Methods.numberOfChildrenGlobal(id) - Integer.parseInt(ServentSingleton.getInstance().getList().get(id))));
 							} catch (UnknownHostException e) {
 								e.printStackTrace();
 							}
@@ -750,6 +1217,26 @@ public class Responder implements Runnable{
 							info = Storage.CIRCLE_CHECK + " test 123123:3123";
 							try {
 								ServentListener.createSocket(Methods.getIp(), Integer.toString(Methods.getPort()), info);
+							} catch (UnknownHostException e) {
+								e.printStackTrace();
+							}
+
+							String notifyAddressTemp = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId());
+							String[] notifyAddress;
+							if (notifyAddressTemp.contains(" ")) {
+								notifyAddress = notifyAddressTemp.split(" ")[0].split(":");
+							} else {
+								notifyAddress = notifyAddressTemp.split(":");
+							}
+
+							// Create socket
+							try {
+								info = Storage.NOTIFY_GLOBAL_PARENT + " " +
+										Storage.GAME_FINISHED + " " +
+										Methods.getAddress()+ " " +
+										ServentSingleton.getInstance().getId() + " 1 1";
+
+								ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
 							} catch (UnknownHostException e) {
 								e.printStackTrace();
 							}
@@ -911,6 +1398,26 @@ public class Responder implements Runnable{
 								e.printStackTrace();
 							}
 
+							String notifyAddressTemp = ServentSingleton.getInstance().getList().get(Methods.getLocalParent(ServentSingleton.getInstance().getId()));
+							String[] notifyAddress;
+							if (notifyAddressTemp.contains(" ")) {
+								notifyAddress = notifyAddressTemp.split(" ")[0].split(":");
+							} else {
+								notifyAddress = notifyAddressTemp.split(":");
+							}
+
+							// Create socket
+							try {
+								info = Storage.NOTIFY_GLOBAL_PARENT + " " +
+										Storage.GAME_FINISHED + " " +
+										Methods.getAddress()+ " " +
+										ServentSingleton.getInstance().getId() + " 1 0";
+
+								ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
+							} catch (UnknownHostException e) {
+								e.printStackTrace();
+							}
+
 						} else {
 							// If notify old node
 
@@ -929,47 +1436,17 @@ public class Responder implements Runnable{
 							if (Integer.parseInt(ServentSingleton.getInstance().getProccess().get(ServentSingleton.getInstance().getId())) > 0) {
 
 								int myTimes = ServentSingleton.getInstance().getTempTimes();
-								int hisTimes = ServentSingleton.getInstance().getTempTimes() / 2;
-								ServentSingleton.getInstance().setTempTimes(myTimes - hisTimes);
+								int hisTimes = myTimes / 2;
 
-								// Create socket
-								try {
-									info = Storage.NOTIFY_CHILD + " " +
-											Storage.ACCEPT_MORE_GAME + " " +
-											Methods.getAddress() + " " +
-											hisTimes;
-
-									ServentListener.createSocket(ip, port, info);
-								} catch (UnknownHostException e) {
-									e.printStackTrace();
-								}
-							} else {
-								// vrati nazad
-
-								String[] notifyAddress;
-								String notifyAddressTemp = ServentSingleton.getInstance().getList().get(Methods.getParent(ServentSingleton.getInstance().getList()));
-								if (notifyAddressTemp.contains(" ")) {
-									notifyAddress = notifyAddressTemp.split(" ")[0].split(":");
-								} else {
-									notifyAddress = notifyAddressTemp.split(":");
-								}
-
-								// Create socket
-								info = Storage.NOTIFY_GLOBAL_PARENT + " " +
-										Storage.GAME_FINISHED + " " +
-										ip + ":" + port + " " +
-										message[3];
-
-								ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
-							}
-						} else {
-							if (Integer.parseInt(ServentSingleton.getInstance().getProccess().get(ServentSingleton.getInstance().getId())) > 0) {
-
-								// uzmi od njega iako je parent jer izigrava
-								if (ServentSingleton.getInstance().isPlaying()) {
-									int myTimes = ServentSingleton.getInstance().getTempTimes();
-									int hisTimes = ServentSingleton.getInstance().getTempTimes() / 2;
+								if (Storage.TIMES_MIN_SEND < hisTimes) {
+									System.out.println(ServentSingleton.getInstance().getTempTimes() + " - - - " + myTimes);
 									ServentSingleton.getInstance().setTempTimes(myTimes - hisTimes);
+
+									try {
+										System.out.println("[" + ip + ":" + port + "] => [" + Methods.getAddress() + "] Imao sam " + myTimes + " izigravanja, dao sam " + (myTimes / 2) + " i ostalo mi je " + (myTimes - hisTimes));
+									} catch (UnknownHostException e) {
+										e.printStackTrace();
+									}
 
 									// Create socket
 									try {
@@ -983,70 +1460,30 @@ public class Responder implements Runnable{
 										e.printStackTrace();
 									}
 								} else {
-									// proveri da li neko izigrava
-									// NOTIFY_ALL
-									Iterator iterateMoreGame = ServentSingleton.getInstance().getProccess().entrySet().iterator();
-									while (iterateMoreGame.hasNext()) {
-										Map.Entry pair = (Map.Entry) iterateMoreGame.next();
-
-										// Ako izigrava
-										if (Integer.parseInt(pair.getValue().toString()) > 0) {
-
-											// ne proveravaj onog ko ti je poslao
-											if (!message[4].equals(pair.getKey().toString())) {
-
-												// Ako njegovi childovi imaju izigrivanja, posalji ih kod njih, da im uzme izigravanja momentalno
-												if (Methods.isNode1(pair.getKey().toString()) || Methods.isNode2(pair.getKey().toString())) {
-
-													String[] notifyAddress;
-
-													if (ServentSingleton.getInstance().getList().get(pair.getKey().toString()).contains(" ")) {
-														String[] parseToNotifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(" ");
-														notifyAddress = parseToNotifyAddress[0].split(":");
-													} else {
-														notifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(":");
-													}
-
-													// Create socket
-													info = Storage.NOTIFY_CHILD + " " +
-															Storage.MORE_GAME + " " +
-															ip + ":" + port + " " +
-															message[3];
-
-													ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
-
-													break;
-												} else {
-													// ako je neki drugi parent a ima izigravanja neko njegov, salji ga kod njega !
-													String[] notifyAddress;
-
-													if (ServentSingleton.getInstance().getList().get(pair.getKey().toString()).contains(" ")) {
-														String[] parseToNotifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(" ");
-														notifyAddress = parseToNotifyAddress[0].split(":");
-													} else {
-														notifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(":");
-													}
-
-													// Create socket
-													info = Storage.NOTIFY_CHILD + " " +
-															Storage.MORE_GAME + " " +
-															ip + ":" + port + " " +
-															message[3] + " " +
-															ServentSingleton.getInstance().getId();
-
-													ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
-
-													break;
-												}
-											}
-										}
+									String[] notifyAddress;
+//									String notifyAddressTemp = ServentSingleton.getInstance().getList().get(Methods.getParent(ServentSingleton.getInstance().getList()));
+									String notifyAddressTemp = ServentSingleton.getInstance().getList().get(Methods.getLocalParent(ServentSingleton.getInstance().getId()));
+									if (notifyAddressTemp.contains(" ")) {
+										notifyAddress = notifyAddressTemp.split(" ")[0].split(":");
+									} else {
+										notifyAddress = notifyAddressTemp.split(":");
 									}
+
+									// Create socket
+									info = Storage.NOTIFY_GLOBAL_PARENT + " " +
+											Storage.GAME_FINISHED + " " +
+											ip + ":" + port + " " +
+											message[3] + " 1 0";
+
+									ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
+
 								}
 							} else {
 								// vrati nazad
 
 								String[] notifyAddress;
-								String notifyAddressTemp = ServentSingleton.getInstance().getList().get(Methods.getParent(ServentSingleton.getInstance().getList()));
+//								String notifyAddressTemp = ServentSingleton.getInstance().getList().get(Methods.getParent(ServentSingleton.getInstance().getList()));
+								String notifyAddressTemp = ServentSingleton.getInstance().getList().get(Methods.getLocalParent(ServentSingleton.getInstance().getId()));
 								if (notifyAddressTemp.contains(" ")) {
 									notifyAddress = notifyAddressTemp.split(" ")[0].split(":");
 								} else {
@@ -1057,22 +1494,399 @@ public class Responder implements Runnable{
 								info = Storage.NOTIFY_GLOBAL_PARENT + " " +
 										Storage.GAME_FINISHED + " " +
 										ip + ":" + port + " " +
-										message[3];
+										message[3] + " 1 0";
 
 								ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
-
 							}
+						} else {
+							// Ako je on sam slobodan
+
+							Iterator iterateMoreGame;
+
+							// proveri da li neko izigrava
+							// NOTIFY_ALL
+							iterateMoreGame = ServentSingleton.getInstance().getProccess().entrySet().iterator();
+							while (iterateMoreGame.hasNext()) {
+								Map.Entry pair = (Map.Entry) iterateMoreGame.next();
+
+								if (pair.getKey().toString().equals(message[4])) {
+									continue;
+								}
+
+								// Ako nije parent
+								if (!pair.getValue().toString().contains(".")) {
+
+									// Ako ima slobodnih
+									if (Integer.parseInt(pair.getValue().toString()) > 0) {
+
+										// Ako childovi imaju izigravanja, salji njima note
+										if (Methods.isNode1(pair.getKey().toString()) || Methods.isNode2(pair.getKey().toString())) {
+//												 Ako njegovi childovi imaju izigrivanja, posalji ih kod njih, da im uzme izigravanja momentalno
+
+											String[] notifyAddress;
+
+											if (ServentSingleton.getInstance().getList().get(pair.getKey().toString()).contains(" ")) {
+												String[] parseToNotifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(" ");
+												notifyAddress = parseToNotifyAddress[0].split(":");
+											} else {
+												notifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(":");
+											}
+
+											String testProcesa = ServentSingleton.getInstance().getProccess().get(message[3]);
+											String[] testProcesa1;
+											if (testProcesa.toString().contains(".")) {
+												testProcesa1 = testProcesa.toString().split("\\.");
+												if (Methods.isLocalParent(message[3])) {
+													System.out.println("Pitaj za izigravanja1.1 " + notifyAddress[0] + ":" + notifyAddress[1] + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]) + "] " + ServentSingleton.getInstance().getProccess());
+													ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]);
+												} else {
+													System.out.println("Pitaj za izigravanja1.2 " + notifyAddress[0] + ":" + notifyAddress[1] + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1 )) + "] " + ServentSingleton.getInstance().getProccess());
+													ServentSingleton.getInstance().getProccess().put(message[3], testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1 ));
+												}
+											} else {
+												System.out.println("Pitaj za izigravanja1.3 " + notifyAddress[0] + ":" + notifyAddress[1] + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1) + "] " + ServentSingleton.getInstance().getProccess());
+												ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1));
+											}
+
+											ServentSingleton.getInstance().getWaiting().put(message[3], pair.getKey().toString());
+
+
+											// Create socket
+											info = Storage.NOTIFY_CHILD + " " +
+													Storage.MORE_GAME + " " +
+													ip + ":" + port + " " +
+													message[3] + " " +
+													ServentSingleton.getInstance().getId();
+
+											ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
+											break;
+										} else {
+											// Ako parent ima izigravanja
+											int myTimes = ServentSingleton.getInstance().getTempTimes();
+											int hisTimes = myTimes / 2;
+
+											if (Storage.TIMES_MIN_SEND < hisTimes) {
+												System.out.println(ServentSingleton.getInstance().getTempTimes() + " - - - " + myTimes);
+												ServentSingleton.getInstance().setTempTimes(myTimes - hisTimes);
+
+												try {
+													System.out.println("[" + ip + ":" + port + "] => [" + Methods.getAddress() + "] Imao sam " + myTimes + " izigravanja, dao sam " + (myTimes / 2) + " i ostalo mi je " + (myTimes - hisTimes));
+												} catch (UnknownHostException e) {
+													e.printStackTrace();
+												}
+
+												String testProcesa = ServentSingleton.getInstance().getProccess().get(message[3]);
+												String[] testProcesa1;
+												if (testProcesa.toString().contains(".")) {
+													testProcesa1 = testProcesa.toString().split("\\.");
+													if (Methods.isLocalParent(message[3])) {
+														System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]) + "] " + ServentSingleton.getInstance().getProccess());
+														ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]);
+													} else {
+														System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1)) + "] " + ServentSingleton.getInstance().getProccess());
+														ServentSingleton.getInstance().getProccess().put(message[3], testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1));
+													}
+												} else {
+													System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1) + "] " + ServentSingleton.getInstance().getProccess());
+													ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1));
+												}
+
+												// Create socket
+												try {
+													info = Storage.NOTIFY_CHILD + " " +
+															Storage.ACCEPT_MORE_GAME + " " +
+															Methods.getAddress() + " " +
+															hisTimes;
+
+													ServentListener.createSocket(ip, port, info);
+												} catch (UnknownHostException e) {
+													e.printStackTrace();
+												}
+											}
+											break;
+										}
+									}
+								} else {
+									// Ako je on sam slobodan
+									if (Integer.parseInt(pair.getValue().toString().split("\\.")[0]) > 0 || Integer.parseInt(pair.getValue().toString().split("\\.")[1]) > 0) {
+
+										// Ako njegovi childovi imaju izigrivanja, posalji ih kod njih, da im uzme izigravanja momentalno
+
+										String[] notifyAddress;
+
+										if (ServentSingleton.getInstance().getList().get(pair.getKey().toString()).contains(" ")) {
+											String[] parseToNotifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(" ");
+											notifyAddress = parseToNotifyAddress[0].split(":");
+										} else {
+											notifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(":");
+										}
+
+										String testProcesa = ServentSingleton.getInstance().getProccess().get(message[3]);
+										String[] testProcesa1;
+										if (testProcesa.toString().contains(".")) {
+											testProcesa1 = testProcesa.toString().split("\\.");
+											if (Methods.isLocalParent(message[3])) {
+												System.out.println("Pitaj za izigravanja1.1 " + notifyAddress[0] + ":" + notifyAddress[1] + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]) + "] " + ServentSingleton.getInstance().getProccess());
+												ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]);
+											} else {
+												System.out.println("Pitaj za izigravanja1.2 " + notifyAddress[0] + ":" + notifyAddress[1] + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1 )) + "] " + ServentSingleton.getInstance().getProccess());
+												ServentSingleton.getInstance().getProccess().put(message[3], testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1 ));
+											}
+										} else {
+											System.out.println("Pitaj za izigravanja1.3 " + notifyAddress[0] + ":" + notifyAddress[1] + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1) + "] " + ServentSingleton.getInstance().getProccess());
+											ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1));
+										}
+
+										ServentSingleton.getInstance().getWaiting().put(message[3], pair.getKey().toString());
+
+										// Create socket
+										info = Storage.NOTIFY_CHILD + " " +
+												Storage.MORE_GAME + " " +
+												ip + ":" + port + " " +
+												message[3] + " " +
+												ServentSingleton.getInstance().getId();
+
+										ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
+
+										break;
+									}
+								}
+							}
+//							if (Integer.parseInt(ServentSingleton.getInstance().getProccess().get(ServentSingleton.getInstance().getId())) > 0) {
+//
+//								// uzmi od njega iako je parent jer izigrava
+//								if (ServentSingleton.getInstance().isPlaying()) {
+//									int myTimes = ServentSingleton.getInstance().getTempTimes();
+//									int hisTimes = myTimes / 2;
+//
+//									if (Storage.TIMES_MIN_SEND < hisTimes) {
+//										System.out.println(ServentSingleton.getInstance().getTempTimes() + " - - - " + myTimes);
+//										ServentSingleton.getInstance().setTempTimes(myTimes - hisTimes);
+//
+//										try {
+//											System.out.println("[" + ip + ":" + port + "] => [" + Methods.getAddress() + "] Imao sam " + myTimes + " izigravanja, dao sam " + (myTimes / 2) + " i ostalo mi je " + (myTimes - hisTimes));
+//										} catch (UnknownHostException e) {
+//											e.printStackTrace();
+//										}
+//
+//										// Create socket
+//										try {
+//											info = Storage.NOTIFY_CHILD + " " +
+//													Storage.ACCEPT_MORE_GAME + " " +
+//													Methods.getAddress() + " " +
+//													hisTimes;
+//
+//											ServentListener.createSocket(ip, port, info);
+//										} catch (UnknownHostException e) {
+//											e.printStackTrace();
+//										}
+//
+//									} else {
+//										String[] notifyAddress;
+//										String notifyAddressTemp = ServentSingleton.getInstance().getList().get(Methods.getParent(ServentSingleton.getInstance().getList()));
+//										if (notifyAddressTemp.contains(" ")) {
+//											notifyAddress = notifyAddressTemp.split(" ")[0].split(":");
+//										} else {
+//											notifyAddress = notifyAddressTemp.split(":");
+//										}
+//
+//										// Create socket
+//										info = Storage.NOTIFY_GLOBAL_PARENT + " " +
+//												Storage.GAME_FINISHED + " " +
+//												ip + ":" + port + " " +
+//												message[3] + " 1";
+//
+//										ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
+//
+//									}
+//								} else {
+//									// proveri da li neko izigrava
+//									// NOTIFY_ALL
+//									Iterator iterateMoreGame = ServentSingleton.getInstance().getProccess().entrySet().iterator();
+//									while (iterateMoreGame.hasNext()) {
+//										Map.Entry pair = (Map.Entry) iterateMoreGame.next();
+//
+//										// Ako izigrava
+//										if (!ServentSingleton.getInstance().getProccess().get(pair.getValue().toString()).contains(".")) {
+//											if (Integer.parseInt(pair.getValue().toString()) > 0) {
+//
+//												// ne proveravaj onog ko ti je poslao
+//												if (!message[4].equals(pair.getKey().toString()) && !ServentSingleton.getInstance().getId().equals(pair.getKey().toString())) {
+//
+//													// Ako njegovi childovi imaju izigrivanja, posalji ih kod njih, da im uzme izigravanja momentalno
+//													if (Methods.isNode1(pair.getKey().toString()) || Methods.isNode2(pair.getKey().toString())) {
+//
+//														String[] notifyAddress;
+//
+//														if (ServentSingleton.getInstance().getList().get(pair.getKey().toString()).contains(" ")) {
+//															String[] parseToNotifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(" ");
+//															notifyAddress = parseToNotifyAddress[0].split(":");
+//														} else {
+//															notifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(":");
+//														}
+//
+//														// Create socket
+//														info = Storage.NOTIFY_CHILD + " " +
+//																Storage.MORE_GAME + " " +
+//																ip + ":" + port + " " +
+//																message[3];
+//
+//														ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
+//
+//														break;
+//													} else {
+//														// ako je neki drugi parent a ima izigravanja neko njegov, salji ga kod njega !
+//														String[] notifyAddress;
+//
+//														if (ServentSingleton.getInstance().getList().get(pair.getKey().toString()).contains(" ")) {
+//															String[] parseToNotifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(" ");
+//															notifyAddress = parseToNotifyAddress[0].split(":");
+//														} else {
+//															notifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(":");
+//														}
+//
+//														// Create socket
+//														info = Storage.NOTIFY_CHILD + " " +
+//																Storage.MORE_GAME + " " +
+//																ip + ":" + port + " " +
+//																message[3] + " " +
+//																ServentSingleton.getInstance().getId();
+//
+//														ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
+//
+//														break;
+//													}
+//												}
+//											}
+//										} else {
+//											if (Integer.parseInt(pair.getValue().toString().split("\\.")[0]) > 0) {
+//
+//												if (!message[4].equals(pair.getKey().toString()) && !ServentSingleton.getInstance().getId().equals(pair.getKey().toString())) {
+//													// ako je neki drugi parent a ima izigravanja neko njegov, salji ga kod njega !
+//													String[] notifyAddress;
+//
+//													if (ServentSingleton.getInstance().getList().get(pair.getKey().toString()).contains(" ")) {
+//														String[] parseToNotifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(" ");
+//														notifyAddress = parseToNotifyAddress[0].split(":");
+//													} else {
+//														notifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(":");
+//													}
+//
+//
+//													//												System.out.println("Pitaj za izigravanja5.1 " + notifyAddress[0] + ":" + notifyAddress[1] + " - - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1) + "]");
+//													//												ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1));
+//
+//													String testProcesa = ServentSingleton.getInstance().getProccess().get(message[3]);
+//													String[] testProcesa1;
+//													if (testProcesa.toString().contains(".")) {
+//														testProcesa1 = testProcesa.toString().split("\\.");
+//														if (Methods.isLocalParent(message[3])) {
+//															System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]) + "] " + ServentSingleton.getInstance().getProccess());
+//															ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]);
+//														} else {
+//															System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1)) + "] " + ServentSingleton.getInstance().getProccess());
+//															ServentSingleton.getInstance().getProccess().put(message[3], testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1));
+//														}
+//													} else {
+//														System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1) + "] " + ServentSingleton.getInstance().getProccess());
+//														ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1));
+//													}
+//
+//													// Create socket
+//													info = Storage.NOTIFY_CHILD + " " +
+//															Storage.MORE_GAME + " " +
+//															ip + ":" + port + " " +
+//															message[3] + " " +
+//															ServentSingleton.getInstance().getId();
+//
+//													ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
+//													break;
+//												}
+//											} else if (Integer.parseInt(pair.getValue().toString().split("\\.")[1]) > 0) {
+//												if (!message[4].equals(pair.getKey().toString()) && !ServentSingleton.getInstance().getId().equals(pair.getKey().toString())) {
+//													// ako je neki drugi parent a ima izigravanja neko njegov, salji ga kod njega !
+//													String[] notifyAddress;
+//
+//													if (ServentSingleton.getInstance().getList().get(pair.getKey().toString()).contains(" ")) {
+//														String[] parseToNotifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(" ");
+//														notifyAddress = parseToNotifyAddress[0].split(":");
+//													} else {
+//														notifyAddress = ServentSingleton.getInstance().getList().get(pair.getKey().toString()).split(":");
+//													}
+//
+//
+////												System.out.println("Pitaj za izigravanja6.1 " + notifyAddress[0] + ":" + notifyAddress[1] + " - - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1) + "]");
+////												ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1));
+//
+//													String testProcesa = ServentSingleton.getInstance().getProccess().get(message[3]);
+//													String[] testProcesa1;
+//													if (testProcesa.toString().contains(".")) {
+//														testProcesa1 = testProcesa.toString().split("\\.");
+//														if (Methods.isLocalParent(message[3])) {
+//															System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]) + "] " + ServentSingleton.getInstance().getProccess());
+//															ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(testProcesa1[0]) + 1) + "." + testProcesa1[1]);
+//														} else {
+//															System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + (testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1)) + "] " + ServentSingleton.getInstance().getProccess());
+//															ServentSingleton.getInstance().getProccess().put(message[3], testProcesa1[0] + "." + Integer.toString(Integer.parseInt(testProcesa1[1]) + 1));
+//														}
+//													} else {
+//														System.out.println("Posalji izigravanja " + ip + ":" + port + " - " + message[3] + " - - [" + ServentSingleton.getInstance().getProccess().get(message[3]) + "] => [" + Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1) + "] " + ServentSingleton.getInstance().getProccess());
+//														ServentSingleton.getInstance().getProccess().put(message[3], Integer.toString(Integer.parseInt(ServentSingleton.getInstance().getProccess().get(message[3])) + 1));
+//													}
+//
+//													// Create socket
+//													info = Storage.NOTIFY_CHILD + " " +
+//															Storage.MORE_GAME + " " +
+//															ip + ":" + port + " " +
+//															message[3] + " " +
+//															ServentSingleton.getInstance().getId();
+//
+//													ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
+//													break;
+//												}
+//											}
+//										}
+//									}
+//								}
+//							} else {
+//								// vrati nazad
+//
+//								String[] notifyAddress;
+//								String notifyAddressTemp = ServentSingleton.getInstance().getList().get(Methods.getParent(ServentSingleton.getInstance().getList()));
+//								if (notifyAddressTemp.contains(" ")) {
+//									notifyAddress = notifyAddressTemp.split(" ")[0].split(":");
+//								} else {
+//									notifyAddress = notifyAddressTemp.split(":");
+//								}
+//
+//								// Create socket
+//								info = Storage.NOTIFY_GLOBAL_PARENT + " " +
+//										Storage.GAME_FINISHED + " " +
+//										ip + ":" + port + " " +
+//										message[3] + " 1";
+//
+//								ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
+//
+//							}
 						}
 						break;
 					case "ACCEPT_MORE_GAME":
-						System.out.println(ip + ":" + port + " " + message[3]);
+//						System.out.println(ip + ":" + port + " " + message[3]);
 
 						if (!message[3].equals("0")) {
+							try {
+								System.out.println("[" + Methods.getAddress() + "] => [" + ip + ":" + port + "] Uzeo sam " + message[3]);
+							} catch (UnknownHostException e) {
+								e.printStackTrace();
+							}
 							ServentSingleton.getInstance().setTempTimes(Integer.parseInt(message[3]));
 
 							// Start game
 							GameListener gameListener = new GameListener();
 							gameListener.respond();
+
+							Methods.setProccessOn(ServentSingleton.getInstance().getId());
+							ServentSingleton.getInstance().setPlaying(true);
 						} else {
 							System.out.println("Usla nula, nista ne radimo!");
 
@@ -1088,7 +1902,7 @@ public class Responder implements Runnable{
 							info = Storage.NOTIFY_GLOBAL_PARENT + " " +
 									Storage.GAME_FINISHED + " " +
 									ip + ":" + port + " " +
-									message[3];
+									message[3] + " 1 0";
 
 							ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
 						}
@@ -1300,11 +2114,11 @@ public class Responder implements Runnable{
 						ServentSingleton.getInstance().setTokens(tokens);
 						ServentSingleton.getInstance().setTimes(times);
 
-						if (Methods.isGlobalParent(ServentSingleton.getInstance().getId())) {
-							ServentSingleton.getInstance().setTempTimes(times);
-						} else {
+//						if (Methods.isGlobalParent(ServentSingleton.getInstance().getId())) {
+//							ServentSingleton.getInstance().setTempTimes(times);
+//						} else {
 							ServentSingleton.getInstance().setTempTimes(tempTimes);
-						}
+//						}
 
 						// Start game
 						GameListener gameListener = new GameListener();
@@ -1315,18 +2129,14 @@ public class Responder implements Runnable{
 						}
 
 
-						int moreGames = Methods.numberOfChildrenGlobal(ServentSingleton.getInstance().getId());
-						String playGames = ServentSingleton.getInstance().getList().get(ServentSingleton.getInstance().getId());
-						String playGames1;
-						if (playGames.contains(" ")) {
-							playGames1 = playGames.split(" ")[1];
-
-							ServentSingleton.getInstance().getProccess().put(ServentSingleton.getInstance().getId(), String.valueOf(moreGames - Integer.parseInt(playGames1)));
-						} else {
-							ServentSingleton.getInstance().getProccess().put(ServentSingleton.getInstance().getId(), "1");
-						}
-
+						Methods.setProccessOn(ServentSingleton.getInstance().getId());
 						ServentSingleton.getInstance().setPlaying(true);
+
+						try {
+							Methods.printInfo();
+						} catch (UnknownHostException e) {
+							e.printStackTrace();
+						}
 
 						// NOTIFY_ALL
 						if (!Methods.isNode1(ServentSingleton.getInstance().getId()) && !Methods.isNode2(ServentSingleton.getInstance().getId())) {
@@ -1352,11 +2162,13 @@ public class Responder implements Runnable{
 											info = Storage.NOTIFY_ALL + " " +
 													Storage.GAME + " " +
 													Methods.getAddress() + " " +
-													player1 + ":" + player2 + ":" + row + ":" + col + ":" + tokens + ":" + times + ":" + tempTimes + ":" + timesDiv + " " +
+													player1 + ":" + player2 + ":" + row + ":" + col + ":" + tokens + ":" + times + ":" + times + ":" + timesDiv + " " +
 													ServentSingleton.getInstance().getId() + " " +
 													message[5];
 
 											ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
+
+											Methods.setProccessOn(pair.getKey().toString());
 										} catch (UnknownHostException e) {
 											e.printStackTrace();
 										}
@@ -1367,11 +2179,13 @@ public class Responder implements Runnable{
 											info = Storage.NOTIFY_ALL + " " +
 													Storage.GAME + " " +
 													Methods.getAddress() + " " +
-													player1 + ":" + player2 + ":" + row + ":" + col + ":" + tokens + ":" + times + ":" + tempTimes + ":" + timesDiv + " " +
+													player1 + ":" + player2 + ":" + row + ":" + col + ":" + tokens + ":" + times + ":" + times + ":" + timesDiv + " " +
 													ServentSingleton.getInstance().getId() + " " +
 													message[5];
 
 											ServentListener.createSocket(notifyAddress[0], notifyAddress[1], info);
+
+											Methods.setProccessOn(pair.getKey().toString());
 										} catch (UnknownHostException e) {
 											e.printStackTrace();
 										}
@@ -1385,11 +2199,13 @@ public class Responder implements Runnable{
 											info = Storage.NOTIFY_ALL + " " +
 													Storage.GAME + " " +
 													Methods.getAddress() + " " +
-													player1 + ":" + player2 + ":" + row + ":" + col + ":" + tokens + ":" + times + ":" + tempTimes + ":" + timesDiv + " " +
+													player1 + ":" + player2 + ":" + row + ":" + col + ":" + tokens + ":" + times + ":" + times + ":" + timesDiv + " " +
 													ServentSingleton.getInstance().getId() + " " +
 													message[5];
 
 											ServentListener.createSocket(addressOfNode1[0], addressOfNode1[1], info);
+
+											Methods.setProccessOn(pair.getKey().toString());
 										} catch (UnknownHostException e) {
 											e.printStackTrace();
 										}
@@ -1446,11 +2262,6 @@ public class Responder implements Runnable{
 										} else {
 											notifyAddress = pair.getValue().toString().split(":");
 										}
-
-//										caseWin = Storage.NOTIFY_ALL;
-//										subcaseWin = Storage.WIN_CHILD;
-//										addressWin =
-
 
 										// Create socket
 										try {

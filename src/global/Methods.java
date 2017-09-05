@@ -551,4 +551,32 @@ public class Methods {
     public static String getAddress() throws UnknownHostException {
         return getIp() + ":" + getPort();
     }
+
+    public static void setProccessOn(String id) {
+        int moreGames = Methods.numberOfChildrenGlobal(id);
+        String playGames = ServentSingleton.getInstance().getList().get(id);
+        String playGames1;
+        String[] playGames2;
+        if (playGames.contains(" ")) {
+            playGames1 = playGames.split(" ")[1];
+//            if (ServentSingleton.getInstance().getProccess().containsKey(id)) {
+//                ServentSingleton.getInstance().getProccess().put(id, "1" + ServentSingleton.getInstance().getProccess().get(id).substring(1));
+//            } else {
+                ServentSingleton.getInstance().getProccess().put(id, "1." + String.valueOf(moreGames - Integer.parseInt(playGames1)));
+//            }
+        } else {
+            if (ServentSingleton.getInstance().getProccess().get(id).contains(".")) {
+                int testtt = 0;
+                if (Methods.getNode1(ServentSingleton.getInstance().getList()) != null) {
+                    testtt++;
+                }
+                if (Methods.getNode2(ServentSingleton.getInstance().getList()) != null) {
+                    testtt++;
+                }
+                ServentSingleton.getInstance().getProccess().put(id, "1." + testtt);
+            } else {
+                ServentSingleton.getInstance().getProccess().put(id, "1");
+            }
+        }
+    }
 }

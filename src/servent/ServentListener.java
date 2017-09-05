@@ -71,32 +71,38 @@ public class ServentListener implements Runnable {
 	}
 
 	public static void createSocket(String ip, String port, String info) {
+		int tryTimes = 10;
 		boolean cantConnect = false;
 		boolean breakDead = true;
 		while (breakDead) {
-			if (!ServentListener.isDead(ip, Integer.parseInt(port))) {
-				while (true) {
-					try {
-						Socket socket = new Socket(ip, Integer.parseInt(port));
-						if (!info.equals("info")) {
-							SocketUtils.writeLine(socket, info);
-						} else {
-							socket.close();
+			if (tryTimes > 0) {
+				if (!ServentListener.isDead(ip, Integer.parseInt(port))) {
+					while (true) {
+						try {
+							Socket socket = new Socket(ip, Integer.parseInt(port));
+							if (!info.equals("info")) {
+								SocketUtils.writeLine(socket, info);
+							} else {
+								socket.close();
+							}
+							if (cantConnect) {
+								System.out.println("Not first connect to : " + ip + ":" + port);
+							}
+							breakDead = false;
+							break;
+						} catch (SocketException e) {
+							System.out.println("SocketException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
+						} catch (IOException e) {
+							System.out.println("IOException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
 						}
-						if (cantConnect) {
-							System.out.println("Not first connect to : " + ip + ":" + port);
-						}
-						breakDead = false;
-						break;
-					} catch (SocketException e) {
-						System.out.println("SocketException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
-					} catch (IOException e) {
-						System.out.println("IOException : " + e.getMessage() + " - " + e.getCause() + " ------ " + e.getStackTrace());
 					}
+				} else {
+					cantConnect = true;
+					tryTimes = tryTimes - 1;
+					System.out.println("Can't connect to : " + ip + ":" + port);
 				}
 			} else {
-				cantConnect = true;
-				System.out.println("Can't connect to : " + ip + ":" + port);
+				break;
 			}
 		}
 

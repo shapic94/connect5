@@ -80,4 +80,5 @@ public class Storage {
     public static final String WIN_CHILD = "WIN_CHILD";
 
     public static final int TIMES_PER_SEC = 100000;
+    public static final int TIMES_MIN_SEND = 10;
 }
